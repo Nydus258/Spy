@@ -1,5 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>SPY Time Intelligence</title>
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="SPY is a Windows time tracker. See which apps and websites you use, grouped into categories, and get focus insights. Your data stays on your computer. Free 3-day trial."><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SPY – Windows time tracking and focus analysis</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&display=swap">
 <style>
@@ -82,6 +82,24 @@ section{padding:112px 0;border-top:1px solid var(--line)}
 @media (max-width:700px){.trust-list{grid-template-columns:1fr;column-gap:0}}
 .scan-note{margin-top:22px;max-width:70ch;color:var(--muted);font-size:14px}
 .download{text-align:center}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:48px}
+.step{border:1px solid var(--line);border-radius:14px;padding:26px;background:var(--surface)}
+.step .n{font-family:"Space Grotesk",sans-serif;font-size:14px;color:var(--accent-soft);margin-bottom:12px}
+.step h3{font-size:19px;margin-bottom:8px}
+.step p{color:var(--muted);font-size:15px}
+@media (max-width:820px){.steps{grid-template-columns:1fr}}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:44px}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.cols h3{font-size:19px;margin-bottom:12px}
+.cols ul{margin:0;padding-left:20px;color:var(--muted);font-size:15px}
+.cols li{margin:8px 0}
+.note{margin-top:28px;color:var(--muted);font-size:15px;max-width:70ch}
+.faq{margin-top:40px;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line);padding:20px 0}
+.faq summary{cursor:pointer;font-size:18px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq summary::after{content:"+";color:var(--accent-soft)}
+.faq details[open] summary::after{content:"\2212"}
+.faq p{margin-top:12px;color:var(--muted);font-size:16px}
 .download p{margin:20px auto 0;color:var(--muted);font-size:18px}
 .download .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:36px}
 footer{padding:40px 0 140px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
@@ -239,6 +257,54 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 </div>
 </section>
 
+<section id="how">
+<div class="wrap">
+<div class="eyebrow" data-k="howEyebrow">How it works</div>
+<h2 class="h2" data-k="howTitle">Three steps, all on your PC.</h2>
+<div class="steps">
+<div class="step"><div class="n">1</div><h3 data-k="s1t">Install and let it run</h3><p data-k="s1">SPY runs quietly in the background and notes which app or website is in front and for how long.</p></div>
+<div class="step"><div class="n">2</div><h3 data-k="s2t">It sorts your time</h3><p data-k="s2">Apps and sites are grouped into categories, and you can add your own rules.</p></div>
+<div class="step"><div class="n">3</div><h3 data-k="s3t">See where it goes</h3><p data-k="s3">Open the overview, analysis and timeline to compare today, the last 7 days and the last 30 days, and use focus sessions to get alerts.</p></div>
+</div>
+</div>
+</section>
+
+<section id="privacy">
+<div class="wrap">
+<div class="eyebrow" data-k="privEyebrow">Your data</div>
+<h2 class="h2" data-k="privTitle">What SPY records, and what it never does.</h2>
+<div class="cols">
+<div><h3 data-k="recTitle">SPY records</h3><ul>
+<li data-k="rec1">The name of the app in front and its window title</li>
+<li data-k="rec2">Start and end times, and idle time</li>
+<li data-k="rec3">The website name in supported browsers, only if you turn that setting on (never the page path or search text)</li>
+</ul></div>
+<div><h3 data-k="neverTitle">SPY never records</h3><ul>
+<li data-k="nev1">Keystrokes or what you type</li>
+<li data-k="nev2">Screenshots</li>
+<li data-k="nev3">Microphone or camera data</li>
+<li data-k="nev4">File contents</li>
+</ul></div>
+</div>
+<p class="note" data-k="privNote">Everything stays in a folder on your computer and is not sent to us. One optional setting, off by default, looks up YouTube channel names through YouTube's public service.</p>
+</div>
+</section>
+
+<section id="faq">
+<div class="wrap">
+<div class="eyebrow" data-k="faqEyebrow">Questions</div>
+<h2 class="h2" data-k="faqTitle">Frequently asked questions.</h2>
+<div class="faq">
+<details><summary data-k="q1">Does SPY send my data anywhere?</summary><p data-k="a1">No. Everything SPY records stays on your computer. The only optional internet request is the YouTube channel lookup, which is off by default.</p></details>
+<details><summary data-k="q2">Is SPY spyware?</summary><p data-k="a2">No. SPY is made for seeing your own computer use. It is not meant to be installed on someone else's computer without their knowledge, and it is not marketed for secret monitoring.</p></details>
+<details><summary data-k="q3">What happens after the 3-day trial?</summary><p data-k="a3">Tracking pauses until you enter a license key. Your records are kept and can be exported.</p></details>
+<details><summary data-k="q4">Can I export or delete my data?</summary><p data-k="a4">Yes. Export to CSV or JSON, clear your history at any time, or set automatic deletion of older records.</p></details>
+<details><summary data-k="q5">Which languages does SPY support?</summary><p data-k="a5">Turkish, English, German, Spanish, French, Portuguese, Russian, Italian and Ukrainian.</p></details>
+<details><summary data-k="q6">How do I get support?</summary><p data-k="a6">Write to spyisletme@gmail.com and include the version number shown in Settings.</p></details>
+</div>
+</div>
+</section>
+
 <section id="trust">
 <div class="wrap">
 <div class="eyebrow" data-k="trustEyebrow">Trust</div>
@@ -290,6 +356,7 @@ pCur:"Active now",pToday:"Total today",pFocus:"Focus score",pCats:"Categories",p
 featEyebrow:"Features",featTitle:"Everything SPY does.",f1t:"Live activity",f1:"See the app in use right now, its category, and how long it has been open.",f2t:"Analysis",f2:"Compare today, the last 7 days and the last 30 days, with trends and changes.",f3t:"Timeline",f3:"Follow the day step by step, from app switches to total time per app.",f4t:"Focus sessions",f4:"Start a session and get alerts at 1 and 5 minutes when a distraction opens.",f5t:"Ask Spy",f5:"Ask questions about your own activity and get answers based on your data.",f6t:"You stay in control",f6:"Export to JSON or CSV, clear history, and set what counts as idle time.",
 whyEyebrow:"Why it matters",whyTitle:"Distraction is invisible until you measure it.",whyText:"Most people underestimate how often they switch tasks and how long those switches last. Seeing it clearly is the first step to getting your focus time back.",
 scanNote:"VirusTotal scan of Spy 1.4.3 (Spy_Setup.exe): 69 of 70 engines report no threat. One engine (Kaspersky) shows a heuristic warning, which we believe is a false positive common to Python-built programs. Open the report to see every result.",
+howEyebrow:"How it works",howTitle:"Three steps, all on your PC.",s1t:"Install and let it run",s1:"SPY runs quietly in the background and notes which app or website is in front and for how long.",s2t:"It sorts your time",s2:"Apps and sites are grouped into categories, and you can add your own rules.",s3t:"See where it goes",s3:"Open the overview, analysis and timeline to compare today, the last 7 days and the last 30 days, and use focus sessions to get alerts.",privEyebrow:"Your data",privTitle:"What SPY records, and what it never does.",recTitle:"SPY records",rec1:"The name of the app in front and its window title",rec2:"Start and end times, and idle time",rec3:"The website name in supported browsers, only if you turn that setting on (never the page path or search text)",neverTitle:"SPY never records",nev1:"Keystrokes or what you type",nev2:"Screenshots",nev3:"Microphone or camera data",nev4:"File contents",privNote:"Everything stays in a folder on your computer and is not sent to us. One optional setting, off by default, looks up YouTube channel names through YouTube's public service.",faqEyebrow:"Questions",faqTitle:"Frequently asked questions.",q1:"Does SPY send my data anywhere?",a1:"No. Everything SPY records stays on your computer. The only optional internet request is the YouTube channel lookup, which is off by default.",q2:"Is SPY spyware?",a2:"No. SPY is made for seeing your own computer use. It is not meant to be installed on someone else's computer without their knowledge, and it is not marketed for secret monitoring.",q3:"What happens after the 3-day trial?",a3:"Tracking pauses until you enter a license key. Your records are kept and can be exported.",q4:"Can I export or delete my data?",a4:"Yes. Export to CSV or JSON, clear your history at any time, or set automatic deletion of older records.",q5:"Which languages does SPY support?",a5:"Turkish, English, German, Spanish, French, Portuguese, Russian, Italian and Ukrainian.",q6:"How do I get support?",a6:"Write to spyisletme@gmail.com and include the version number shown in Settings.",
 trustEyebrow:"Trust",trustTitle:"Transparent by design.",tr1:"Antivirus scan report",tr1l:"View",tr2:"License terms",tr2l:"Read",
 trialTitle:"3-day trial",trialText:"Try SPY free for 3 days. No payment is needed to start.",dlBtn:"Download",dlStarted:"Download started. Run Spy_Setup.exe when it finishes.",
 dlEyebrow:"Get started",dlTitle:"Start your 3-day trial.",dlText:"No payment is needed to start. After the trial, a license is required to keep using SPY.",contact:"Contact"},
@@ -300,6 +367,7 @@ pCur:"Şu an aktif",pToday:"Bugün toplam",pFocus:"Odak skoru",pCats:"Kategorile
 featEyebrow:"Özellikler",featTitle:"SPY'ın yaptığı her şey.",f1t:"Canlı etkinlik",f1:"Şu an kullanılan uygulamayı, kategorisini ve ne kadar süredir açık olduğunu görün.",f2t:"Analiz",f2:"Bugün, son 7 gün ve son 30 günü trendler ve değişimlerle karşılaştırın.",f3t:"Timeline",f3:"Günü adım adım izleyin: uygulama geçişlerinden uygulama başına toplam süreye.",f4t:"Odak oturumları",f4:"Bir oturum başlatın, dikkat dağıtıcı bir uygulama açıldığında 1 ve 5 dakikada uyarı alın.",f5t:"Spy'a sor",f5:"Kendi kullanımınız hakkında sorular sorun, verilerinize dayanan yanıtlar alın.",f6t:"Kontrol sizde",f6:"JSON veya CSV olarak dışa aktarın, geçmişi temizleyin, boşta kalma süresini siz belirleyin.",
 whyEyebrow:"Neden önemli",whyTitle:"Ölçene kadar dikkat dağınıklığı görünmez.",whyText:"Çoğu kişi görev değiştirme sıklığını ve bu geçişlerin ne kadar sürdüğünü olduğundan az tahmin eder. Bunu net görmek, odak süresini geri kazanmanın ilk adımıdır.",
 scanNote:"Spy 1.4.3 (Spy_Setup.exe) VirusTotal taraması: 70 motorun 69'u tehdit bildirmedi. Bir motor (Kaspersky) tahmine dayalı (heuristik) bir uyarı verdi; bunun Python ile derlenen programlarda sık görülen bir yanlış alarm olduğunu düşünüyoruz. Tüm sonuçları görmek için raporu açın.",
+howEyebrow:"Nasıl çalışır",howTitle:"Üç adım, hepsi bilgisayarınızda.",s1t:"Kurun ve çalışsın",s1:"SPY arka planda sessizce çalışır; hangi uygulamanın ya da sitenin açık olduğunu ve ne kadar süre açık kaldığını not eder.",s2t:"Zamanınızı ayırır",s2:"Uygulamalar ve siteler kategorilere ayrılır; kendi kurallarınızı da ekleyebilirsiniz.",s3t:"Nereye gittiğini görün",s3:"Genel bakış, analiz ve zaman çizelgesiyle bugünü, son 7 günü ve son 30 günü karşılaştırın; odak oturumlarıyla uyarı alın.",privEyebrow:"Verileriniz",privTitle:"SPY neyi kaydeder, neyi asla kaydetmez.",recTitle:"SPY kaydeder",rec1:"Ön plandaki uygulamanın adı ve pencere başlığı",rec2:"Başlangıç ve bitiş zamanları ile boşta kalma süresi",rec3:"Desteklenen tarayıcılarda site adı; yalnızca bu ayarı açarsanız (sayfa yolu ve arama metni asla kaydedilmez)",neverTitle:"SPY asla kaydetmez",nev1:"Tuş vuruşlarınızı ya da yazdıklarınızı",nev2:"Ekran görüntülerini",nev3:"Mikrofon veya kamera verilerini",nev4:"Dosya içeriklerini",privNote:"Her şey bilgisayarınızdaki bir klasörde kalır ve bize gönderilmez. Varsayılan olarak kapalı, isteğe bağlı bir ayar, YouTube kanal adlarını YouTube'un herkese açık hizmeti üzerinden öğrenir.",faqEyebrow:"Sorular",faqTitle:"Sık sorulan sorular.",q1:"SPY verilerimi bir yere gönderir mi?",a1:"Hayır. SPY'ın kaydettiği her şey bilgisayarınızda kalır. İnternete çıkan tek isteğe bağlı işlem, varsayılan olarak kapalı olan YouTube kanalı sorgusudur.",q2:"SPY bir casus yazılım mı?",a2:"Hayır. SPY, kişinin kendi bilgisayar kullanımını görmesi için yapılmıştır. Başkasının bilgisi olmadan onun bilgisayarına kurulmak için tasarlanmamıştır ve gizli izleme amacıyla pazarlanmaz.",q3:"3 günlük deneme bitince ne olur?",a3:"Lisans anahtarı girene kadar takip durur. Kayıtlarınız saklanır ve dışa aktarılabilir.",q4:"Verilerimi dışa aktarabilir ya da silebilir miyim?",a4:"Evet. CSV veya JSON olarak dışa aktarabilir, geçmişi istediğiniz zaman temizleyebilir ya da eski kayıtların otomatik silinmesini ayarlayabilirsiniz.",q5:"SPY hangi dilleri destekler?",a5:"Türkçe, İngilizce, Almanca, İspanyolca, Fransızca, Portekizce, Rusça, İtalyanca ve Ukraynaca.",q6:"Destek nasıl alırım?",a6:"spyisletme@gmail.com adresine yazın ve Ayarlar'da görünen sürüm numarasını ekleyin.",
 trustEyebrow:"Güven",trustTitle:"Tasarımından şeffaf.",tr1:"Antivirüs tarama raporu",tr1l:"Görüntüle",tr2:"Lisans koşulları",tr2l:"Oku",
 trialTitle:"3 günlük deneme",trialText:"SPY'ı 3 gün ücretsiz deneyin. Başlamak için ödeme gerekmez.",dlBtn:"İndir",dlStarted:"İndirme başladı. Bittiğinde Spy_Setup.exe dosyasını çalıştırın.",
 dlEyebrow:"Başlayın",dlTitle:"3 günlük denemenizi başlatın.",dlText:"Başlamak için ödeme gerekmez. Deneme bittikten sonra SPY'ı kullanmaya devam etmek için lisans gerekir.",contact:"İletişim"}
