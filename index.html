@@ -54,6 +54,28 @@ section{padding:112px 0;border-top:1px solid var(--line)}
 .tabs button{background:none;border:1px solid transparent;color:var(--muted);padding:8px 14px;border-radius:999px;font-size:14px}
 .tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--line);background:var(--card)}
 .window{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.tour{overflow:hidden}
+.tour-grid{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,9fr);gap:40px;align-items:center;margin-top:28px}
+.tour-text{min-height:200px}
+.tour-text h3{font-family:"Space Grotesk",Inter,sans-serif;font-size:32px;line-height:1.15;margin:0 0 14px;padding-bottom:10px;border-bottom:3px solid var(--tc,var(--accent));display:inline-block;transition:border-color .5s}
+.tour-text p{color:var(--muted);margin:0;max-width:42ch}
+.tour-ctl{display:flex;align-items:center;gap:14px;margin-top:28px}
+.tour-ctl button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--fg);font-size:20px;cursor:pointer;transition:background .2s,border-color .2s}
+.tour-ctl button:hover{border-color:var(--tc,var(--accent));background:var(--surface)}
+.tour-dots{display:flex;gap:8px;margin-left:8px}
+.tour-dots i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .4s,transform .4s}
+.tour-dots i.on{background:var(--tc,var(--accent));transform:scale(1.35)}
+.tour-stage{position:relative;aspect-ratio:1600/875;perspective:1600px;outline:none;touch-action:pan-y;margin:12% 16% 4% 0}
+.tour-card{position:absolute;inset:0;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 30px 60px -20px rgba(0,0,0,.7);transform-origin:50% 60%;transition:transform .7s cubic-bezier(.22,.8,.24,1),opacity .7s,filter .7s;will-change:transform,opacity}
+.tour-card img{display:block;width:100%;height:100%;object-fit:cover}
+.tour-card.front{cursor:zoom-in}
+.tour-card.nt{transition:none}
+.tour-note{margin:18px 0 0;font-size:13px;color:var(--muted)}
+.lb{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.lb.open{display:flex}
+.lb img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 20px 80px rgba(0,0,0,.8)}
+@media(max-width:860px){.tour-grid{grid-template-columns:1fr;gap:26px}.tour-text{min-height:0}.tour-text h3{font-size:26px}.tour-stage{margin:0 8% 10% 0}}
+@media(prefers-reduced-motion:reduce){.tour-card{transition:opacity .2s}}
 .wbar{display:flex;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .wbar i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
 .pane{padding:24px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;min-height:300px}
@@ -234,6 +256,8 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 </div>
 </section>
 
+
+
 <section id="features">
 <div class="wrap">
 <div class="eyebrow" data-k="featEyebrow">Features</div>
@@ -311,7 +335,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 <h2 class="h2" data-k="trustTitle">Transparent by design.</h2>
 <div class="trust-list">
 <a href="https://www.virustotal.com/gui/file/1868234319950335bfdb3b98abd3d8387224771f0a4c23ad6784aaa5b5ddf365/detection" target="_blank" rel="noopener noreferrer"><span data-k="tr1">Antivirus scan report</span><span data-k="tr1l">View</span></a>
-<a href="#trust"><span data-k="tr2">License terms</span><span data-k="tr2l">Read</span></a>
+<a href="lisans.html"><span data-k="tr2">License terms</span><span data-k="tr2l">Read</span></a>
 </div>
 <p class="scan-note" data-k="scanNote">VirusTotal scan of Spy 1.4.4 (Spy_Setup.exe): 68 of 69 engines report no threat. One engine (Kaspersky) shows a heuristic warning, which we believe is a false positive common to Python-built programs. Open the report to see every result.</p>
 </div>
@@ -360,7 +384,7 @@ scanNote:"VirusTotal scan of Spy 1.4.4 (Spy_Setup.exe): 68 of 69 engines report 
 howEyebrow:"How it works",howTitle:"Three steps, all on your PC.",s1t:"Install and let it run",s1:"SPY runs quietly in the background and notes which app or website is in front and for how long.",s2t:"It sorts your time",s2:"Apps and sites are grouped into categories, and you can add your own rules.",s3t:"See where it goes",s3:"Open the overview, analysis and timeline to compare today, the last 7 days and the last 30 days, and use focus sessions to get alerts.",privEyebrow:"Your data",privTitle:"What SPY records, and what it never does.",recTitle:"SPY records",rec1:"The name of the app in front and its window title",rec2:"Start and end times, and idle time",rec3:"The website name in supported browsers, only if you turn that setting on (never the page path or search text)",neverTitle:"SPY never records",nev1:"Keystrokes or what you type",nev2:"Screenshots",nev3:"Microphone or camera data",nev4:"File contents",privNote:"Everything stays in a folder on your computer and is not sent to us. One optional setting, off by default, looks up YouTube channel names through YouTube's public service.",faqEyebrow:"Questions",faqTitle:"Frequently asked questions.",q1:"Does SPY send my data anywhere?",a1:"No. Everything SPY records stays on your computer. The only optional internet request is the YouTube channel lookup, which is off by default.",q2:"Is SPY spyware?",a2:"No. SPY is made for seeing your own computer use. It is not meant to be installed on someone else's computer without their knowledge, and it is not marketed for secret monitoring.",q3:"What happens after the 3-day trial?",a3:"Tracking pauses until you enter a license key. Your records are kept and can be exported.",q4:"Can I export or delete my data?",a4:"Yes. Export to CSV or JSON, clear your history at any time, or set automatic deletion of older records.",q5:"Which languages does SPY support?",a5:"Turkish, English, German, Spanish, French, Portuguese, Russian, Italian and Ukrainian.",q6:"How do I get support?",a6:"Write to spyisletme@gmail.com and include the version number shown in Settings.",
 trustEyebrow:"Trust",trustTitle:"Transparent by design.",tr1:"Antivirus scan report",tr1l:"View",tr2:"License terms",tr2l:"Read",
 trialTitle:"3-day trial",trialText:"Try SPY free for 3 days. No payment is needed to start.",dlBtn:"Download",dlStarted:"Download started. Run Spy_Setup.exe when it finishes.",
-dlEyebrow:"Get started",dlTitle:"Start your 3-day trial.",dlText:"No payment is needed to start. After the trial, a license is required to keep using SPY.",contact:"Contact"},
+tourEyebrow:"A look inside",tourTitle:"Six views, one picture of your day.",tourNote:"Example data shown. Click the front screenshot to enlarge.",tourNames:["Overview","Analysis","Timeline","Focus","Spy","Management"],tourDesc:["See the app in use right now, how your day splits across categories, your most used apps and your daily goal, all at a glance.","Compare today, the last 7 days and the last 30 days. See trends, your busiest day and Spy's own reading of the numbers.","Follow the day app by app: what you used, when, for how long, and an intensity map by hour.","Start uninterrupted focus sessions or a Pomodoro, and track the switches that break your focus and your focus score.","Ask questions about your own use: focus, your most productive hour, how the week is going. Answers come from your records, on your PC.","Assign apps and websites to categories yourself, add rules, import and export. Fix a wrong guess once and past records update too."],dlEyebrow:"Get started",dlTitle:"Start your 3-day trial.",dlText:"No payment is needed to start. After the trial, a license is required to keep using SPY.",contact:"Contact"},
 tr:{try:"SPY'ı 3 gün dene",license:"Lisans al",kicker:"Windows için zaman analizi",welcome:"SPY'a hoş geldiniz",slogan:"Zamanınızın gerçekte nereye gittiğini görün. Sonra geri alın.",cue:"Açmak için kaydır",nProduct:"Ürün",nFeatures:"Özellikler",nTrust:"Güven",nDownload:"İndir",
 aboutEyebrow:"SPY nedir",aboutTitle:"Zamanınızın gerçekte nasıl geçtiğini görün.",aboutText:"SPY, Windows'ta kullandığınız uygulamaları ve siteleri takip eder, kategorilere ayırır ve dikkatinizin nereye gittiğini gösterir. Ardından gördüklerinize göre ne yapacağınızı bulmanıza yardımcı olur.",
 prodEyebrow:"Ürün",prodTitle:"Bütün gününüz tek ekranda.",tab0:"Genel",tab1:"Analiz",tab2:"Timeline",tab3:"Odak",
@@ -371,13 +395,14 @@ scanNote:"Spy 1.4.4 (Spy_Setup.exe) VirusTotal taraması: 69 motorun 68'i tehdit
 howEyebrow:"Nasıl çalışır",howTitle:"Üç adım, hepsi bilgisayarınızda.",s1t:"Kurun ve çalışsın",s1:"SPY arka planda sessizce çalışır; hangi uygulamanın ya da sitenin açık olduğunu ve ne kadar süre açık kaldığını not eder.",s2t:"Zamanınızı ayırır",s2:"Uygulamalar ve siteler kategorilere ayrılır; kendi kurallarınızı da ekleyebilirsiniz.",s3t:"Nereye gittiğini görün",s3:"Genel bakış, analiz ve zaman çizelgesiyle bugünü, son 7 günü ve son 30 günü karşılaştırın; odak oturumlarıyla uyarı alın.",privEyebrow:"Verileriniz",privTitle:"SPY neyi kaydeder, neyi asla kaydetmez.",recTitle:"SPY kaydeder",rec1:"Ön plandaki uygulamanın adı ve pencere başlığı",rec2:"Başlangıç ve bitiş zamanları ile boşta kalma süresi",rec3:"Desteklenen tarayıcılarda site adı; yalnızca bu ayarı açarsanız (sayfa yolu ve arama metni asla kaydedilmez)",neverTitle:"SPY asla kaydetmez",nev1:"Tuş vuruşlarınızı ya da yazdıklarınızı",nev2:"Ekran görüntülerini",nev3:"Mikrofon veya kamera verilerini",nev4:"Dosya içeriklerini",privNote:"Her şey bilgisayarınızdaki bir klasörde kalır ve bize gönderilmez. Varsayılan olarak kapalı, isteğe bağlı bir ayar, YouTube kanal adlarını YouTube'un herkese açık hizmeti üzerinden öğrenir.",faqEyebrow:"Sorular",faqTitle:"Sık sorulan sorular.",q1:"SPY verilerimi bir yere gönderir mi?",a1:"Hayır. SPY'ın kaydettiği her şey bilgisayarınızda kalır. İnternete çıkan tek isteğe bağlı işlem, varsayılan olarak kapalı olan YouTube kanalı sorgusudur.",q2:"SPY bir casus yazılım mı?",a2:"Hayır. SPY, kişinin kendi bilgisayar kullanımını görmesi için yapılmıştır. Başkasının bilgisi olmadan onun bilgisayarına kurulmak için tasarlanmamıştır ve gizli izleme amacıyla pazarlanmaz.",q3:"3 günlük deneme bitince ne olur?",a3:"Lisans anahtarı girene kadar takip durur. Kayıtlarınız saklanır ve dışa aktarılabilir.",q4:"Verilerimi dışa aktarabilir ya da silebilir miyim?",a4:"Evet. CSV veya JSON olarak dışa aktarabilir, geçmişi istediğiniz zaman temizleyebilir ya da eski kayıtların otomatik silinmesini ayarlayabilirsiniz.",q5:"SPY hangi dilleri destekler?",a5:"Türkçe, İngilizce, Almanca, İspanyolca, Fransızca, Portekizce, Rusça, İtalyanca ve Ukraynaca.",q6:"Destek nasıl alırım?",a6:"spyisletme@gmail.com adresine yazın ve Ayarlar'da görünen sürüm numarasını ekleyin.",
 trustEyebrow:"Güven",trustTitle:"Tasarımından şeffaf.",tr1:"Antivirüs tarama raporu",tr1l:"Görüntüle",tr2:"Lisans koşulları",tr2l:"Oku",
 trialTitle:"3 günlük deneme",trialText:"SPY'ı 3 gün ücretsiz deneyin. Başlamak için ödeme gerekmez.",dlBtn:"İndir",dlStarted:"İndirme başladı. Bittiğinde Spy_Setup.exe dosyasını çalıştırın.",
-dlEyebrow:"Başlayın",dlTitle:"3 günlük denemenizi başlatın.",dlText:"Başlamak için ödeme gerekmez. Deneme bittikten sonra SPY'ı kullanmaya devam etmek için lisans gerekir.",contact:"İletişim"}
+tourEyebrow:"İçeriye bir bakış",tourTitle:"Altı görünüm, gününüzün tek resmi.",tourNote:"Örnek veriler gösterilmektedir. Büyütmek için öndeki görüntüye tıklayın.",tourNames:["Genel","Analiz","Timeline","Odak","Spy","Yönetim"],tourDesc:["Şu an kullandığınız uygulamayı, günün kategori dağılımını, en çok kullandığınız uygulamaları ve günlük hedefinizi tek bakışta görün.","Bugünü, son 7 günü ve son 30 günü karşılaştırın. Trendleri, en yoğun günü ve Spy'ın sayılara yorumunu görün.","Günü uygulama uygulama izleyin: neyi, ne zaman, ne kadar kullandınız; saatlere göre yoğunluk haritasıyla birlikte.","Kesintisiz odak oturumu ya da Pomodoro başlatın; odağınızı bölen geçişleri ve odak skorunuzu takip edin.","Kendi kullanımınız hakkında sorular sorun: odak, en verimli saat, hafta nasıl gidiyor. Cevaplar kayıtlarınızdan, bilgisayarınızda hesaplanır.","Uygulama ve siteleri kategorilere kendiniz atayın, kural ekleyin, içe ve dışa aktarın. Yanlış sınıflamayı bir kez düzeltin, geçmiş kayıtlar da güncellenir."],dlEyebrow:"Başlayın",dlTitle:"3 günlük denemenizi başlatın.",dlText:"Başlamak için ödeme gerekmez. Deneme bittikten sonra SPY'ı kullanmaya devam etmek için lisans gerekir.",contact:"İletişim"}
 };
 function setLang(l){
 document.documentElement.lang=l;
 document.querySelectorAll('[data-k]').forEach(function(el){var k=el.getAttribute('data-k');if(D[l][k]!=null)el.textContent=D[l][k];});
 document.querySelectorAll('[data-lang]').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-lang')===l?'true':'false')});
 try{localStorage.setItem('spy-lang',l)}catch(e){}
+if(window.tourLang)window.tourLang(l);
 }
 var saved=null;try{saved=localStorage.getItem('spy-lang')}catch(e){}
 setLang(saved==='tr'?'tr':'en');
@@ -389,6 +414,61 @@ var i=t.getAttribute('data-tab');
 tabs.forEach(function(x){x.setAttribute('aria-selected',x===t?'true':'false')});
 document.querySelectorAll('[data-pane]').forEach(function(p){p.hidden=p.getAttribute('data-pane')!==i});
 })});
+
+(function(){
+var N=6,COLORS=['#7c4dff','#38bdf8','#22c55e','#f59e0b','#ec4899','#a78bfa'];
+var stage=document.getElementById('tourStage');if(!stage)return;
+var H=document.getElementById('tourH'),P=document.getElementById('tourP'),dots=document.getElementById('tourDots');
+var lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
+var order=[0,1,2,3,4,5],cards=[],lang='en',busy=false;
+for(var i=0;i<N;i++){var c=document.createElement('div');c.className='tour-card';var im=document.createElement('img');im.alt='';im.loading=i<2?'eager':'lazy';im.decoding='async';c.appendChild(im);stage.appendChild(c);cards.push(c);var d=document.createElement('i');dots.appendChild(d)}
+function place(c,p,out){
+var s=out?'translate3d(-26%,30%,120px) rotateY(8deg) rotateZ(-6deg) scale(1.06)':'translate3d('+(p*11)+'%,'+(-p*9)+'%,'+(-p*40)+'px) rotateY('+(p===0?-4:-7)+'deg) rotateX(2deg) scale('+(1-p*.04)+')';
+c.style.transform=s;
+c.style.opacity=out?0:(p>=3?0:(1-p*.18));
+c.style.filter=p===0||out?'none':'blur('+(p*1.4)+'px) brightness('+(1-p*.06)+')';
+c.style.zIndex=out?N+1:N-p;
+c.style.pointerEvents=p===0?'auto':'none';
+c.classList.toggle('front',p===0&&!out);
+c.setAttribute('aria-hidden',p===0?'false':'true');
+}
+function text(){
+var d=D[lang],f=order[0];
+H.textContent=d.tourNames[f];P.textContent=d.tourDesc[f];
+var root=document.getElementById('tour');root.style.setProperty('--tc',COLORS[f]);
+[].forEach.call(dots.children,function(x,i){x.classList.toggle('on',i===f)});
+stage.setAttribute('aria-label',d.tourNames[f]+' ('+(f+1)+'/'+N+')');
+}
+function render(outIdx){
+cards.forEach(function(c,i){place(c,order.indexOf(i),i===outIdx)});text();
+}
+function images(){cards.forEach(function(c,i){c.firstChild.src='shots/'+lang+'-'+i+'.webp'})}
+window.tourLang=function(l){lang=l;images();text()};
+function next(){
+if(busy)return;busy=true;var out=order[0];
+order=order.slice(1).concat(out);
+cards.forEach(function(c,i){place(c,order.indexOf(i),i===out)});text();
+setTimeout(function(){
+var c=cards[out];c.classList.add('nt');place(c,N-1,false);c.offsetWidth;c.classList.remove('nt');busy=false;
+},700);
+}
+function prev(){
+if(busy)return;busy=true;var back=order[N-1];var c=cards[back];
+c.classList.add('nt');place(c,0,true);c.offsetWidth;c.classList.remove('nt');
+order=[back].concat(order.slice(0,N-1));
+cards.forEach(function(x,i){place(x,order.indexOf(i),false)});text();
+setTimeout(function(){busy=false},650);
+}
+document.getElementById('tourNext').addEventListener('click',next);
+document.getElementById('tourPrev').addEventListener('click',prev);
+stage.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}});
+var x0=null;
+stage.addEventListener('pointerdown',function(e){x0=e.clientX});
+stage.addEventListener('pointerup',function(e){if(x0===null)return;var dx=e.clientX-x0;x0=null;if(dx<-40)next();else if(dx>40)prev();else if(e.target.closest('.tour-card.front')){lbImg.src=cards[order[0]].firstChild.src;lb.classList.add('open')}});
+lb.addEventListener('click',function(){lb.classList.remove('open')});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.classList.remove('open')});
+lang=document.documentElement.lang==='tr'?'tr':'en';images();render(-1);
+})();
 
 function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
 function slowTo(y,ms){
