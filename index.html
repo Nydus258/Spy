@@ -66,7 +66,7 @@ section{padding:112px 0;border-top:1px solid var(--line)}
 .tour-dots{display:flex;gap:8px;margin-left:8px}
 .tour-dots i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .4s,transform .4s}
 .tour-dots i.on{background:var(--tc,var(--accent));transform:scale(1.35)}
-.tour-stage{position:relative;aspect-ratio:1600/875;perspective:1800px;outline:none;touch-action:pan-y;margin:16% 22% 4% 0}
+.tour-stage{position:relative;aspect-ratio:1600/875;perspective:1600px;outline:none;touch-action:pan-y;margin:12% 16% 4% 0}
 .tour-card{position:absolute;inset:0;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 30px 60px -20px rgba(0,0,0,.7);transform-origin:50% 60%;transition:transform .7s cubic-bezier(.22,.8,.24,1),opacity .7s,filter .7s;will-change:transform,opacity}
 .tour-card img{display:block;width:100%;height:100%;object-fit:cover}
 .tour-card.front{cursor:zoom-in}
@@ -287,7 +287,26 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 </div>
 </section>
 
-
+<section id="tour" class="tour">
+<div class="wrap">
+<div class="eyebrow" data-k="tourEyebrow">A look inside</div>
+<h2 class="h2" data-k="tourTitle">Six views, one picture of your day.</h2>
+<div class="tour-grid">
+<div class="tour-text">
+<h3 id="tourH"></h3>
+<p id="tourP"></p>
+<div class="tour-ctl">
+<button type="button" id="tourPrev" aria-label="Previous">&#8592;</button>
+<button type="button" id="tourNext" aria-label="Next">&#8594;</button>
+<div class="tour-dots" id="tourDots" aria-hidden="true"></div>
+</div>
+<p class="tour-note" data-k="tourNote">Example data shown.</p>
+</div>
+<div class="tour-stage" id="tourStage" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Screenshots"></div>
+</div>
+</div>
+</section>
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Screenshot"><img id="lbImg" alt=""></div>
 
 <section id="how">
 <div class="wrap">
@@ -431,10 +450,8 @@ var lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
 var order=[0,1,2,3,4,5],cards=[],lang='en',busy=false;
 for(var i=0;i<N;i++){var c=document.createElement('div');c.className='tour-card';var im=document.createElement('img');im.alt='';im.loading=i<2?'eager':'lazy';im.decoding='async';c.appendChild(im);stage.appendChild(c);cards.push(c);var d=document.createElement('i');dots.appendChild(d)}
 function place(c,p,out){
-// Kartlar bir kürenin yüzeyinde durur: merkez R kadar geride, her kart kürenin üstünde boylam (ay) ve enlem (ax) kadar döner.
-// p=0 öndeki kart; p>0 yukarı-sağa, çıkan kart (out) aşağı-sola doğru küre üzerinde kayar.
-var R=520,q=Math.min(p,3),ay=out?-15:q*7,ax=out?-10:q*4.5;
-c.style.transform='translateZ(-'+R+'px) rotateY('+ay+'deg) rotateX('+ax+'deg) translateZ('+R+'px) '+(out?'rotateZ(-4deg) scale(1.04)':'scale('+(1-q*.04)+')');
+var s=out?'translate3d(-26%,30%,120px) rotateY(8deg) rotateZ(-6deg) scale(1.06)':'translate3d('+(p*11)+'%,'+(-p*9)+'%,'+(-p*40)+'px) rotateY('+(p===0?-4:-7)+'deg) rotateX(2deg) scale('+(1-p*.04)+')';
+c.style.transform=s;
 c.style.opacity=out?0:(p>=3?0:(1-p*.18));
 c.style.filter=p===0||out?'none':'blur('+(p*1.4)+'px) brightness('+(1-p*.06)+')';
 c.style.zIndex=out?N+1:N-p;
