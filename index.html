@@ -448,7 +448,7 @@ var stage=document.getElementById('tourStage');if(!stage)return;
 var H=document.getElementById('tourH'),P=document.getElementById('tourP'),dots=document.getElementById('tourDots');
 var lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
 var order=[0,1,2,3,4,5],cards=[],lang='en',busy=false;
-for(var i=0;i<N;i++){var c=document.createElement('div');c.className='tour-card';var im=document.createElement('img');im.alt='';im.loading=i<2?'eager':'lazy';im.decoding='async';c.appendChild(im);stage.appendChild(c);cards.push(c);var d=document.createElement('i');dots.appendChild(d)}
+for(var i=0;i<N;i++){var c=document.createElement('div');c.className='tour-card';var im=document.createElement('img');im.alt='';im.loading='eager';im.decoding='async';c.appendChild(im);stage.appendChild(c);cards.push(c);var d=document.createElement('i');dots.appendChild(d)}
 function place(c,p,out){
 var s=out?'translate3d(-26%,30%,120px) rotateY(8deg) rotateZ(-6deg) scale(1.06)':'translate3d('+(p*11)+'%,'+(-p*9)+'%,'+(-p*40)+'px) rotateY('+(p===0?-4:-7)+'deg) rotateX(2deg) scale('+(1-p*.04)+')';
 c.style.transform=s;
