@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&display=swap">
 <style>
 :root{--bg:#0b0d12;--surface:#12151c;--card:#181c26;--line:#262c3a;--fg:#eef1f7;--muted:#9099ad;--accent:#7c4dff;--accent-soft:#a78bfa;--green:#22c55e;--amber:#f59e0b;--cyan:#38bdf8;--pink:#ec4899;color-scheme:dark}
+html,body{overscroll-behavior-y:none}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden}
 h1,h2,h3{font-family:"Space Grotesk",Inter,system-ui,sans-serif;font-weight:500;margin:0;text-wrap:balance;letter-spacing:-.01em}
 p{margin:0;max-width:64ch}
@@ -525,13 +526,15 @@ if(state==='closed'&&e.deltaY>0){e.preventDefault();openEye()}
 else if(state==='open'&&e.deltaY<0&&atTop()){e.preventDefault();closeEye()}
 else if(state==='opening'||state==='closing'){e.preventDefault()}
 },{passive:false});
-var touchY=null;
-window.addEventListener('touchstart',function(e){touchY=e.touches[0].clientY},{passive:true});
+var touchY=null,startedAtTop=false;
+// Telefon: göz yalnızca parmak sayfanın en üstündeyken başlayan yeni bir kaydırmayla kapanır
+// (aşağı çekerken en üste gelince sayfanın yenilenmesini ve istemeden kapanmayı önler).
+window.addEventListener('touchstart',function(e){touchY=e.touches[0].clientY;startedAtTop=atTop()},{passive:true});
 window.addEventListener('touchmove',function(e){
 if(touchY===null)return;
 var dy=touchY-e.touches[0].clientY;
 if(state==='closed'&&dy>30){e.preventDefault();openEye()}
-else if(state==='open'&&dy<-30&&atTop()){e.preventDefault();closeEye()}
+else if(state==='open'&&dy<-30&&atTop()&&startedAtTop){e.preventDefault();closeEye()}
 else if(state==='opening'||state==='closing'){e.preventDefault()}
 },{passive:false});
 window.addEventListener('keydown',function(e){
