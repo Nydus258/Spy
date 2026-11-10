@@ -1,0 +1,427 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SPY Time Intelligence</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&display=swap">
+<style>
+:root{--bg:#0b0d12;--surface:#12151c;--card:#181c26;--line:#262c3a;--fg:#eef1f7;--muted:#9099ad;--accent:#7c4dff;--accent-soft:#a78bfa;--green:#22c55e;--amber:#f59e0b;--cyan:#38bdf8;--pink:#ec4899;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden}
+h1,h2,h3{font-family:"Space Grotesk",Inter,system-ui,sans-serif;font-weight:500;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0;max-width:64ch}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+
+/* Top-right controls: language, trial, license */
+.controls{position:fixed;top:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:50;display:flex;gap:8px;align-items:center;transition:opacity .6s ease}
+.controls.off{opacity:0;pointer-events:none}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(11,13,18,.7);backdrop-filter:blur(6px)}
+.lang button{background:none;border:0;color:var(--muted);font-size:13px;padding:8px 12px}
+.lang button[aria-pressed="true"]{color:var(--fg);background:var(--card)}
+.btn{display:inline-flex;align-items:center;font-size:14px;font-weight:500;padding:9px 16px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
+.btn.ghost{background:rgba(11,13,18,.7);border-color:var(--line);color:var(--fg);backdrop-filter:blur(6px)}
+.btn.lg{font-size:16px;padding:14px 26px}
+
+/* Opening hero: the eye is a single SVG that morphs between closed and open */
+.hero{position:relative;height:100vh;min-height:520px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 46%,#2b2474 0%,#1c1950 56%,#120f36 100%)}
+.eye{position:absolute;left:50%;top:50%;width:min(760px,94vw);height:min(380px,48vw);transform:translate(-50%,-50%);}
+.eye svg{width:100%;height:100%;display:block;overflow:visible}
+.veil{position:absolute;inset:0;background:rgba(10,8,30,.35);pointer-events:none;transition:opacity .4s ease}
+.hero-text{position:absolute;left:0;right:0;margin:0 auto;bottom:calc(50% + 34px);z-index:2;text-align:center;padding:0 20px;max-width:760px}
+.hero-text .kicker{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:18px}
+.hero-text h1{font-size:clamp(40px,8vw,88px);line-height:1.02}
+.hero-text p{margin:20px auto 0;font-size:clamp(17px,2.2vw,22px);color:#c9cfdc;max-width:34ch}
+.cue{position:absolute;bottom:clamp(90px,14vh,130px);left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#b9b2e6;z-index:2;transition:opacity .5s ease}
+
+/* Bottom submenu: appears after the eye opens */
+.submenu{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translate(-50%,18px);z-index:60;display:flex;align-items:center;gap:4px;padding:6px;border-radius:999px;border:1px solid var(--line);background:rgba(14,12,38,.78);backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .7s ease,transform .7s ease;max-width:calc(100vw - 32px)}
+.submenu.show{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.submenu a{font-size:14px;color:#d8dcf0;text-decoration:none;padding:9px 16px;border-radius:999px;white-space:nowrap}
+.submenu a:hover{background:rgba(255,255,255,.07);color:#fff}
+.submenu .up{width:38px;height:38px;padding:0;border:0;border-radius:50%;background:transparent;color:#d8dcf0;display:grid;place-items:center}
+.submenu .up:hover{background:rgba(255,255,255,.07)}
+.submenu .up svg{width:18px;height:18px}
+
+/* Main site: one continuous surface */
+main{background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+section{padding:112px 0;border-top:1px solid var(--line)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:14px}
+.h2{font-size:clamp(30px,4.6vw,48px);line-height:1.1}
+.lead{margin-top:18px;color:var(--muted);font-size:18px}
+.intro{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:56px;align-items:end}
+@media (max-width:820px){.intro{grid-template-columns:1fr;gap:24px}}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:44px 0 16px}
+.tabs button{background:none;border:1px solid transparent;color:var(--muted);padding:8px 14px;border-radius:999px;font-size:14px}
+.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--line);background:var(--card)}
+.window{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.wbar{display:flex;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.wbar i{width:10px;height:10px;border-radius:50%;background:var(--line);display:block}
+.pane{padding:24px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;min-height:300px}
+.pane[hidden]{display:none}
+.pane .m{background:var(--card);border-radius:10px;padding:16px}
+.pane .m span{display:block;font-size:12px;color:var(--muted)}
+.pane .m b{display:block;font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:24px;margin-top:4px}
+.pane .wide{grid-column:span 2;background:var(--card);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.bar{height:10px;border-radius:5px;background:var(--line);position:relative;overflow:hidden}
+.bar em{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+.cap{font-size:13px;color:var(--muted);margin-top:12px}
+@media (max-width:700px){.pane{grid-template-columns:1fr 1fr}.pane .wide{grid-column:span 2}}
+.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:56px;border-top:1px solid var(--line)}
+.feat{padding:32px 28px 32px 0;border-bottom:1px solid var(--line)}
+.feat:not(:nth-child(3n)){border-right:1px solid var(--line);padding-right:28px}
+.feat:not(:nth-child(3n+1)){padding-left:28px}
+.feat .dot{width:8px;height:8px;border-radius:50%;margin-bottom:18px}
+.feat h3{font-size:19px;margin-bottom:8px}
+.feat p{color:var(--muted);font-size:15px}
+@media (max-width:820px){.feats{grid-template-columns:1fr}.feat,.feat:not(:nth-child(3n)),.feat:not(:nth-child(3n+1)){border-right:0;padding:28px 0}}
+.mission p{margin-top:20px;color:var(--muted);font-size:19px;max-width:58ch}
+.trust-list{margin-top:44px;display:grid;grid-template-columns:1fr 1fr;column-gap:64px;border-top:1px solid var(--line)}
+.trust-list a span:last-child{margin-left:20px;white-space:nowrap}
+.trust-list a{display:flex;justify-content:space-between;align-items:center;padding:26px 0;border-bottom:1px solid var(--line);text-decoration:none;font-size:18px}
+.trust-list a span:last-child{color:var(--accent-soft);font-size:15px}
+@media (max-width:700px){.trust-list{grid-template-columns:1fr;column-gap:0}}
+.scan-note{margin-top:22px;max-width:70ch;color:var(--muted);font-size:14px}
+.download{text-align:center}
+.download p{margin:20px auto 0;color:var(--muted);font-size:18px}
+.download .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+footer{padding:40px 0 140px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.dim{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.dim.show{opacity:1;visibility:visible}
+.trial-box{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:30px 26px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(10px) scale(.98);transition:transform .2s}
+.dim.show .trial-box{transform:none}
+.trial-box h3{font-size:1.4rem;margin-bottom:8px}
+.trial-box p{margin:0 auto 20px;color:var(--muted);font-size:.95rem}
+.trial-box .btn{display:inline-block;min-width:150px;text-align:center;cursor:pointer;border:0}
+.trial-x{position:absolute;top:8px;right:10px;background:none;border:0;color:var(--muted);font-size:1.4rem;line-height:1;padding:6px 10px}
+.trial-x:hover{color:var(--fg)}
+.trial-status{margin-top:14px;color:var(--green);font-size:.9rem;min-height:1.3em}
+</style>
+
+<div class="controls" id="controls">
+<div class="lang" role="group" aria-label="Language">
+<button type="button" data-lang="en" aria-pressed="true">EN</button>
+<button type="button" data-lang="tr" aria-pressed="false">TR</button>
+</div>
+<a class="btn ghost" href="#" data-k="try" data-trial="1">Try SPY for 3 days</a>
+<a class="btn" href="#download" data-k="license" data-scroll="1">Get a license</a>
+</div>
+
+<div class="hero" id="hero">
+<div class="veil" id="veil"></div>
+<div class="eye" id="eye">
+<svg viewBox="0 0 720 360" role="img" aria-label="SPY logo eye">
+<defs>
+<linearGradient id="scl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f4ff"/><stop offset="1" stop-color="#d7d0fa"/></linearGradient>
+<radialGradient id="ring" cx="0.4" cy="0.35" r="0.75"><stop offset="0" stop-color="#a98bff"/><stop offset="0.6" stop-color="#6d4ff2"/><stop offset="1" stop-color="#4632b8"/></radialGradient>
+<radialGradient id="iris" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#2a2270"/><stop offset="1" stop-color="#110d33"/></radialGradient>
+<clipPath id="clipShape"><path id="clipPath0" d="M40 180 Q360 320 680 180 Q360 320 40 180 Z"/></clipPath>
+</defs>
+<path id="lidPath" d="M40 180 Q360 320 680 180 Q360 320 40 180 Z" fill="url(#scl)" stroke="#e9e5ff" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+<g clip-path="url(#clipShape)"><g transform="translate(360 180) scale(0.84)">
+<circle r="108" fill="#241e62"/>
+<circle r="96" fill="url(#ring)"/>
+<circle r="82" fill="url(#iris)"/>
+<circle r="88" fill="none" stroke="#34d399" stroke-width="9" stroke-linecap="round" stroke-dasharray="150 400" transform="rotate(120)"/>
+<circle r="42" fill="#0b0827"/>
+<circle cx="14" cy="-14" r="14" fill="#ffffff"/>
+<circle cx="-20" cy="18" r="4" fill="#ffffff" opacity=".45"/>
+</g></g>
+</svg>
+</div>
+<div class="hero-text" id="heroText">
+<div class="kicker" data-k="kicker">Time intelligence for Windows</div>
+<h1 data-k="welcome">Welcome to SPY</h1>
+<p data-k="slogan">See where your time really goes. Then take it back.</p>
+</div>
+<div class="cue" id="cue" data-k="cue">Scroll to open</div>
+</div>
+
+<nav class="submenu" id="submenu" aria-label="Sections">
+<a href="#product" data-k="nProduct" data-scroll="1">Product</a>
+<a href="#features" data-k="nFeatures" data-scroll="1">Features</a>
+<a href="#trust" data-k="nTrust" data-scroll="1">Trust</a>
+<a href="#download" data-k="nDownload" data-scroll="1">Download</a>
+<button class="up" id="upBtn" type="button" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+</nav>
+
+<main id="main">
+<section id="about">
+<div class="wrap intro">
+<div>
+<div class="eyebrow" data-k="aboutEyebrow">What SPY does</div>
+<h2 class="h2" data-k="aboutTitle">See how your time is actually spent.</h2>
+</div>
+<p class="lead" data-k="aboutText">SPY tracks the applications and websites you use on Windows, groups them into categories and shows where your attention goes. Then it helps you act on what it shows.</p>
+</div>
+</section>
+
+<section id="product">
+<div class="wrap">
+<div class="eyebrow" data-k="prodEyebrow">The product</div>
+<h2 class="h2" data-k="prodTitle">One window for your whole day.</h2>
+<div class="tabs" role="tablist" aria-label="Product views">
+<button role="tab" aria-selected="true" data-tab="0" data-k="tab0">Overview</button>
+<button role="tab" aria-selected="false" data-tab="1" data-k="tab1">Analysis</button>
+<button role="tab" aria-selected="false" data-tab="2" data-k="tab2">Timeline</button>
+<button role="tab" aria-selected="false" data-tab="3" data-k="tab3">Focus</button>
+</div>
+<div class="window">
+<div class="wbar"><i></i><i></i><i></i></div>
+<div class="pane" data-pane="0">
+<div class="m"><span data-k="pCur">Active now</span><b>VS Code</b></div>
+<div class="m"><span data-k="pToday">Total today</span><b>5h 42m</b></div>
+<div class="m"><span data-k="pFocus">Focus score</span><b style="color:var(--cyan)">78</b></div>
+<div class="wide"><span class="cap" data-k="pCats">Categories</span>
+<div class="bar"><em style="width:42%;background:var(--accent)"></em></div>
+<div class="bar"><em style="width:22%;background:var(--cyan)"></em></div>
+<div class="bar"><em style="width:14%;background:var(--green)"></em></div>
+</div>
+<div class="m"><span data-k="pAlerts">Alerts</span><b>3</b></div>
+</div>
+<div class="pane" data-pane="1" hidden>
+<div class="m"><span data-k="pToday">Today</span><b>5h 42m</b></div>
+<div class="m"><span data-k="p7">Last 7 days</span><b>38h</b></div>
+<div class="m"><span data-k="p30">Last 30 days</span><b>141h</b></div>
+<div class="wide"><span class="cap" data-k="pTrend">Trend</span>
+<div class="bar"><em style="width:64%;background:var(--cyan)"></em></div>
+<div class="bar"><em style="width:48%;background:var(--cyan)"></em></div>
+<div class="bar"><em style="width:82%;background:var(--cyan)"></em></div>
+</div>
+<div class="m"><span data-k="pChange">Change</span><b style="color:var(--green)">+18m</b></div>
+</div>
+<div class="pane" data-pane="2" hidden>
+<div class="wide"><span class="cap" data-k="pTl">Today's timeline</span>
+<div class="bar"><em style="left:0;width:30%;background:var(--accent)"></em></div>
+<div class="bar"><em style="left:32%;width:22%;background:var(--cyan)"></em></div>
+<div class="bar"><em style="left:56%;width:14%;background:var(--amber)"></em></div>
+<div class="bar"><em style="left:72%;width:20%;background:var(--accent)"></em></div>
+</div>
+<div class="m"><span data-k="pSwitch">App switches</span><b>47</b></div>
+<div class="m"><span data-k="pLongest">Longest session</span><b>1h 12m</b></div>
+<div class="m"><span data-k="pIdle">Idle time</span><b>22m</b></div>
+</div>
+<div class="pane" data-pane="3" hidden>
+<div class="m"><span data-k="pSession">Focus session</span><b>50m</b></div>
+<div class="m"><span data-k="pDist">Distractions</span><b style="color:var(--amber)">2</b></div>
+<div class="m"><span data-k="pScore">Focus score</span><b style="color:var(--cyan)">78</b></div>
+<div class="wide"><span class="cap" data-k="pAlert">Alert</span>
+<div class="bar"><em style="width:60%;background:var(--amber)"></em></div>
+<span class="cap" data-k="pAlertTxt">A distraction app has been open for 5 minutes.</span>
+</div>
+<div class="m"><span data-k="pNext">Next alert</span><b>1 min</b></div>
+</div>
+</div>
+<p class="cap" data-k="exNote">Example data shown.</p>
+</div>
+</section>
+
+<section id="features">
+<div class="wrap">
+<div class="eyebrow" data-k="featEyebrow">Features</div>
+<h2 class="h2" data-k="featTitle">Everything SPY does.</h2>
+<div class="feats">
+<div class="feat"><div class="dot" style="background:var(--accent)"></div><h3 data-k="f1t">Live activity</h3><p data-k="f1">See the app in use right now, its category, and how long it has been open.</p></div>
+<div class="feat"><div class="dot" style="background:var(--cyan)"></div><h3 data-k="f2t">Analysis</h3><p data-k="f2">Compare today, the last 7 days and the last 30 days, with trends and changes.</p></div>
+<div class="feat"><div class="dot" style="background:var(--green)"></div><h3 data-k="f3t">Timeline</h3><p data-k="f3">Follow the day step by step, from app switches to total time per app.</p></div>
+<div class="feat"><div class="dot" style="background:var(--amber)"></div><h3 data-k="f4t">Focus sessions</h3><p data-k="f4">Start a session and get alerts at 1 and 5 minutes when a distraction opens.</p></div>
+<div class="feat"><div class="dot" style="background:var(--pink)"></div><h3 data-k="f5t">Ask Spy</h3><p data-k="f5">Ask questions about your own activity and get answers based on your data.</p></div>
+<div class="feat"><div class="dot" style="background:var(--accent-soft)"></div><h3 data-k="f6t">You stay in control</h3><p data-k="f6">Export to JSON or CSV, clear history, and set what counts as idle time.</p></div>
+</div>
+</div>
+</section>
+
+<section id="why" class="mission">
+<div class="wrap">
+<div class="eyebrow" data-k="whyEyebrow">Why it matters</div>
+<h2 class="h2" data-k="whyTitle">Distraction is invisible until you measure it.</h2>
+<p data-k="whyText">Most people underestimate how often they switch tasks and how long those switches last. Seeing it clearly is the first step to getting your focus time back.</p>
+</div>
+</section>
+
+<section id="trust">
+<div class="wrap">
+<div class="eyebrow" data-k="trustEyebrow">Trust</div>
+<h2 class="h2" data-k="trustTitle">Transparent by design.</h2>
+<div class="trust-list">
+<a href="https://www.virustotal.com/gui/file/ab6b34d315cc4065a6ee39c2a20062f9ac9e95b51aa37899a46e46a525be367e/detection" target="_blank" rel="noopener noreferrer"><span data-k="tr1">Antivirus scan report</span><span data-k="tr1l">View</span></a>
+<a href="#trust"><span data-k="tr2">License terms</span><span data-k="tr2l">Read</span></a>
+</div>
+<p class="scan-note" data-k="scanNote">VirusTotal scan of Spy 1.4.3 (Spy_Setup.exe): 69 of 70 engines report no threat. One engine (Kaspersky) shows a heuristic warning, which we believe is a false positive common to Python-built programs. Open the report to see every result.</p>
+</div>
+</section>
+
+<section id="download" class="download">
+<div class="wrap">
+<div class="eyebrow" data-k="dlEyebrow">Get started</div>
+<h2 class="h2" data-k="dlTitle">Start your 3-day trial.</h2>
+<p data-k="dlText">No payment is needed to start. After the trial, a license is required to keep using SPY.</p>
+<div class="row">
+<a class="btn lg ghost" href="#" data-k="try" data-trial="1">Try SPY for 3 days</a>
+<a class="btn lg" href="#" data-k="license">Get a license</a>
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="wrap">
+<span>© SPY</span>
+<span><span data-k="contact">Contact</span>: <a href="mailto:spyisletme@gmail.com">spyisletme@gmail.com</a></span>
+</div>
+</footer>
+
+<div class="dim" id="trialDim" aria-hidden="true">
+<div class="trial-box" role="dialog" aria-modal="true" aria-labelledby="trialTitle">
+<button type="button" class="trial-x" id="trialX" aria-label="Close">&times;</button>
+<h3 id="trialTitle" data-k="trialTitle">3-day trial</h3>
+<p data-k="trialText">Try SPY free for 3 days. No payment is needed to start.</p>
+<button type="button" class="btn" id="trialDl" data-k="dlBtn">Download</button>
+<div class="trial-status" id="trialStatus" role="status" aria-live="polite"></div>
+</div>
+</div>
+
+<script>
+var D={
+en:{try:"Try SPY for 3 days",license:"Get a license",kicker:"Time intelligence for Windows",welcome:"Welcome to SPY",slogan:"See where your time really goes. Then take it back.",cue:"Scroll to open",nProduct:"Product",nFeatures:"Features",nTrust:"Trust",nDownload:"Download",
+aboutEyebrow:"What SPY does",aboutTitle:"See how your time is actually spent.",aboutText:"SPY tracks the applications and websites you use on Windows, groups them into categories and shows where your attention goes. Then it helps you act on what it shows.",
+prodEyebrow:"The product",prodTitle:"One window for your whole day.",tab0:"Overview",tab1:"Analysis",tab2:"Timeline",tab3:"Focus",
+pCur:"Active now",pToday:"Total today",pFocus:"Focus score",pCats:"Categories",pAlerts:"Alerts",p7:"Last 7 days",p30:"Last 30 days",pTrend:"Trend",pChange:"Change",pTl:"Today's timeline",pSwitch:"App switches",pLongest:"Longest session",pIdle:"Idle time",pSession:"Focus session",pDist:"Distractions",pScore:"Focus score",pAlert:"Alert",pAlertTxt:"A distraction app has been open for 5 minutes.",pNext:"Next alert",exNote:"Example data shown.",
+featEyebrow:"Features",featTitle:"Everything SPY does.",f1t:"Live activity",f1:"See the app in use right now, its category, and how long it has been open.",f2t:"Analysis",f2:"Compare today, the last 7 days and the last 30 days, with trends and changes.",f3t:"Timeline",f3:"Follow the day step by step, from app switches to total time per app.",f4t:"Focus sessions",f4:"Start a session and get alerts at 1 and 5 minutes when a distraction opens.",f5t:"Ask Spy",f5:"Ask questions about your own activity and get answers based on your data.",f6t:"You stay in control",f6:"Export to JSON or CSV, clear history, and set what counts as idle time.",
+whyEyebrow:"Why it matters",whyTitle:"Distraction is invisible until you measure it.",whyText:"Most people underestimate how often they switch tasks and how long those switches last. Seeing it clearly is the first step to getting your focus time back.",
+scanNote:"VirusTotal scan of Spy 1.4.3 (Spy_Setup.exe): 69 of 70 engines report no threat. One engine (Kaspersky) shows a heuristic warning, which we believe is a false positive common to Python-built programs. Open the report to see every result.",
+trustEyebrow:"Trust",trustTitle:"Transparent by design.",tr1:"Antivirus scan report",tr1l:"View",tr2:"License terms",tr2l:"Read",
+trialTitle:"3-day trial",trialText:"Try SPY free for 3 days. No payment is needed to start.",dlBtn:"Download",dlStarted:"Download started. Run Spy_Setup.exe when it finishes.",
+dlEyebrow:"Get started",dlTitle:"Start your 3-day trial.",dlText:"No payment is needed to start. After the trial, a license is required to keep using SPY.",contact:"Contact"},
+tr:{try:"SPY'ı 3 gün dene",license:"Lisans al",kicker:"Windows için zaman analizi",welcome:"SPY'a hoş geldiniz",slogan:"Zamanınızın gerçekte nereye gittiğini görün. Sonra geri alın.",cue:"Açmak için kaydır",nProduct:"Ürün",nFeatures:"Özellikler",nTrust:"Güven",nDownload:"İndir",
+aboutEyebrow:"SPY nedir",aboutTitle:"Zamanınızın gerçekte nasıl geçtiğini görün.",aboutText:"SPY, Windows'ta kullandığınız uygulamaları ve siteleri takip eder, kategorilere ayırır ve dikkatinizin nereye gittiğini gösterir. Ardından gördüklerinize göre ne yapacağınızı bulmanıza yardımcı olur.",
+prodEyebrow:"Ürün",prodTitle:"Bütün gününüz tek ekranda.",tab0:"Genel",tab1:"Analiz",tab2:"Timeline",tab3:"Odak",
+pCur:"Şu an aktif",pToday:"Bugün toplam",pFocus:"Odak skoru",pCats:"Kategoriler",pAlerts:"Uyarılar",p7:"Son 7 gün",p30:"Son 30 gün",pTrend:"Trend",pChange:"Değişim",pTl:"Bugünün zaman çizelgesi",pSwitch:"Uygulama geçişi",pLongest:"En uzun oturum",pIdle:"Boşta kalma",pSession:"Odak oturumu",pDist:"Dikkat dağıtıcılar",pScore:"Odak skoru",pAlert:"Uyarı",pAlertTxt:"Bir dikkat dağıtıcı uygulama 5 dakikadır açık.",pNext:"Sonraki uyarı",exNote:"Gösterilen veriler örnektir.",
+featEyebrow:"Özellikler",featTitle:"SPY'ın yaptığı her şey.",f1t:"Canlı etkinlik",f1:"Şu an kullanılan uygulamayı, kategorisini ve ne kadar süredir açık olduğunu görün.",f2t:"Analiz",f2:"Bugün, son 7 gün ve son 30 günü trendler ve değişimlerle karşılaştırın.",f3t:"Timeline",f3:"Günü adım adım izleyin: uygulama geçişlerinden uygulama başına toplam süreye.",f4t:"Odak oturumları",f4:"Bir oturum başlatın, dikkat dağıtıcı bir uygulama açıldığında 1 ve 5 dakikada uyarı alın.",f5t:"Spy'a sor",f5:"Kendi kullanımınız hakkında sorular sorun, verilerinize dayanan yanıtlar alın.",f6t:"Kontrol sizde",f6:"JSON veya CSV olarak dışa aktarın, geçmişi temizleyin, boşta kalma süresini siz belirleyin.",
+whyEyebrow:"Neden önemli",whyTitle:"Ölçene kadar dikkat dağınıklığı görünmez.",whyText:"Çoğu kişi görev değiştirme sıklığını ve bu geçişlerin ne kadar sürdüğünü olduğundan az tahmin eder. Bunu net görmek, odak süresini geri kazanmanın ilk adımıdır.",
+scanNote:"Spy 1.4.3 (Spy_Setup.exe) VirusTotal taraması: 70 motorun 69'u tehdit bildirmedi. Bir motor (Kaspersky) tahmine dayalı (heuristik) bir uyarı verdi; bunun Python ile derlenen programlarda sık görülen bir yanlış alarm olduğunu düşünüyoruz. Tüm sonuçları görmek için raporu açın.",
+trustEyebrow:"Güven",trustTitle:"Tasarımından şeffaf.",tr1:"Antivirüs tarama raporu",tr1l:"Görüntüle",tr2:"Lisans koşulları",tr2l:"Oku",
+trialTitle:"3 günlük deneme",trialText:"SPY'ı 3 gün ücretsiz deneyin. Başlamak için ödeme gerekmez.",dlBtn:"İndir",dlStarted:"İndirme başladı. Bittiğinde Spy_Setup.exe dosyasını çalıştırın.",
+dlEyebrow:"Başlayın",dlTitle:"3 günlük denemenizi başlatın.",dlText:"Başlamak için ödeme gerekmez. Deneme bittikten sonra SPY'ı kullanmaya devam etmek için lisans gerekir.",contact:"İletişim"}
+};
+function setLang(l){
+document.documentElement.lang=l;
+document.querySelectorAll('[data-k]').forEach(function(el){var k=el.getAttribute('data-k');if(D[l][k]!=null)el.textContent=D[l][k];});
+document.querySelectorAll('[data-lang]').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-lang')===l?'true':'false')});
+try{localStorage.setItem('spy-lang',l)}catch(e){}
+}
+var saved=null;try{saved=localStorage.getItem('spy-lang')}catch(e){}
+setLang(saved==='tr'?'tr':'en');
+document.querySelectorAll('[data-lang]').forEach(function(b){b.addEventListener('click',function(){setLang(b.getAttribute('data-lang'))})});
+
+var tabs=document.querySelectorAll('[role="tab"]');
+tabs.forEach(function(t){t.addEventListener('click',function(){
+var i=t.getAttribute('data-tab');
+tabs.forEach(function(x){x.setAttribute('aria-selected',x===t?'true':'false')});
+document.querySelectorAll('[data-pane]').forEach(function(p){p.hidden=p.getAttribute('data-pane')!==i});
+})});
+
+function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+function slowTo(y,ms){
+var start=window.scrollY,dist=y-start,t0=null;
+function step(ts){if(t0===null)t0=ts;var p=Math.min(1,(ts-t0)/ms);window.scrollTo(0,start+dist*ease(p));if(p<1)requestAnimationFrame(step)}
+requestAnimationFrame(step);
+}
+function setEye(o){
+var ct=(320-370*o).toFixed(1),cb=(320+90*o).toFixed(1),d='M40 180 Q360 '+ct+' 680 180 Q360 '+cb+' 40 180 Z';
+document.getElementById('lidPath').setAttribute('d',d);
+document.getElementById('clipPath0').setAttribute('d',d);
+}
+var state='closed',DUR=500;
+var submenu=document.getElementById('submenu');
+function render(o){
+setEye(o);
+var fade=1-o;
+document.getElementById('veil').style.opacity=fade.toFixed(3);
+document.getElementById('heroText').style.opacity=fade.toFixed(3);
+document.getElementById('heroText').style.transform='translateY('+(-24*o).toFixed(1)+'px)';
+document.getElementById('cue').style.opacity=fade.toFixed(3);
+}
+function animateEye(from,to,done){
+var t0=null;
+function frame(ts){
+if(t0===null)t0=ts;
+var t=Math.min(1,(ts-t0)/DUR);
+render(from+(to-from)*ease(t));
+if(t<1){requestAnimationFrame(frame)}else{done()}
+}
+requestAnimationFrame(frame);
+}
+function openEye(){
+if(state!=='closed')return;
+state='opening';
+animateEye(0,1,function(){state='open';submenu.classList.add('show')});
+}
+function closeEye(){
+if(state!=='open')return;
+state='closing';
+submenu.classList.remove('show');
+animateEye(1,0,function(){state='closed'});
+}
+function atTop(){return window.scrollY<=2}
+window.addEventListener('wheel',function(e){
+if(state==='closed'&&e.deltaY>0){e.preventDefault();openEye()}
+else if(state==='open'&&e.deltaY<0&&atTop()){e.preventDefault();closeEye()}
+else if(state==='opening'||state==='closing'){e.preventDefault()}
+},{passive:false});
+var touchY=null;
+window.addEventListener('touchstart',function(e){touchY=e.touches[0].clientY},{passive:true});
+window.addEventListener('touchmove',function(e){
+if(touchY===null)return;
+var dy=touchY-e.touches[0].clientY;
+if(state==='closed'&&dy>30){e.preventDefault();openEye()}
+else if(state==='open'&&dy<-30&&atTop()){e.preventDefault();closeEye()}
+else if(state==='opening'||state==='closing'){e.preventDefault()}
+},{passive:false});
+window.addEventListener('keydown',function(e){
+if(state==='closed'&&(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' ')){e.preventDefault();openEye()}
+else if(state==='open'&&atTop()&&(e.key==='ArrowUp'||e.key==='PageUp')){e.preventDefault();closeEye()}
+});
+setEye(0);
+document.querySelectorAll('[data-scroll]').forEach(function(a){a.addEventListener('click',function(e){
+var href=a.getAttribute('href');
+if(!href||href==='#')return;
+e.preventDefault();var el=document.querySelector(href);if(el)slowTo(el.getBoundingClientRect().top+window.scrollY,1600);
+})});
+document.getElementById('upBtn').addEventListener('click',function(){slowTo(0,1800)});
+
+var controls=document.getElementById('controls'),hero=document.getElementById('hero');
+function update(){
+var vh=window.innerHeight,y=window.scrollY;
+controls.classList.toggle('off',y>=vh*0.95);
+}
+window.addEventListener('scroll',update,{passive:true});
+window.addEventListener('resize',update);
+update();
+
+// 3 günlük deneme penceresi: ekran %60 karartılır, küçük kutuda "İndir" butonu çıkar.
+// Yayına alırken kurulum dosyasının gerçek adresini yaz (örn. "https://siteniz.com/Spy_Setup.exe").
+var DOWNLOAD_URL="https://github.com/Nydus258/Spy/releases/latest/download/Spy_Setup.exe";
+var trialDim=document.getElementById('trialDim'),trialStatus=document.getElementById('trialStatus'),lastFocus=null;
+function openTrial(){
+lastFocus=document.activeElement;
+trialStatus.textContent='';
+trialDim.classList.add('show');trialDim.setAttribute('aria-hidden','false');
+document.getElementById('trialDl').focus();
+}
+function closeTrial(){
+trialDim.classList.remove('show');trialDim.setAttribute('aria-hidden','true');
+if(lastFocus&&lastFocus.focus)lastFocus.focus();
+}
+document.querySelectorAll('[data-trial]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();openTrial()})});
+document.getElementById('trialX').addEventListener('click',closeTrial);
+trialDim.addEventListener('click',function(e){if(e.target===trialDim)closeTrial()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&trialDim.classList.contains('show'))closeTrial()});
+document.getElementById('trialDl').addEventListener('click',function(){
+var a=document.createElement('a');a.href=DOWNLOAD_URL;a.download='Spy_Setup.exe';
+document.body.appendChild(a);a.click();a.remove();
+trialStatus.textContent=D[document.documentElement.lang||'en'].dlStarted;
+});
+</script>
+
+</body></html>
