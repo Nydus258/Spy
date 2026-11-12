@@ -143,6 +143,49 @@ async function test(name, fn) { await fn(); passed++; console.log('  ok  ' + nam
     await page.context().close(); await page2.context().close();
   });
 
+  await test('Kalıcı oturum bildirimi: geri sayım, aşama geçişi, düğmeler', async () => {
+    const page = await open(browser, 'lang=tr');
+    const ongoing = () => page.evaluate(() => window.Native.raw._ongoing);
+    const fire = (action) => page.evaluate((a) => { window.Native.raw._action = a; window.onSpyResume(); }, action);
+    assert.strictEqual(await ongoing(), null, 'oturum yokken bildirim yok');
+    await nav(page, 'focus');
+    await act(page, 'pomostart');
+    let o = await ongoing();
+    assert.deepStrictEqual([o.kind, o.title, o.text, o.chrono, o.countdown, o.pauseLabel, o.stopLabel], ['pomo', 'Pomodoro · Çalışma 1/4', 'Sonra: 5 dk kısa mola', true, true, 'Duraklat', 'Bitir']);
+    assert.strictEqual(Math.round(o.when / 1000) - NOW, 1500, 'geri sayım aşama bitişine kurulu');
+    const alarms = await page.evaluate(() => window.Native.raw._alarms);
+    assert.deepStrictEqual([alarms[0].nextTitle, alarms[0].nextText, Math.round(alarms[0].nextEnd / 1000) - NOW], ['Pomodoro · Kısa mola', 'Sonra: çalışma 2/4 (25 dk)', 1800], 'uygulama kapalıyken alarm bildirimi sonraki aşamaya geçirir');
+    assert.strictEqual(alarms[7].nextEnd, 0, 'set bitince kalıcı bildirim kalkar');
+    await advance(page, 300);
+    await fire('pomo_pause');
+    o = await ongoing();
+    assert.deepStrictEqual([o.text, o.chrono, o.pauseLabel], ['Duraklatıldı · kalan 20:00', false, 'Devam et']);
+    await fire('pomo_pause');
+    o = await ongoing();
+    assert.deepStrictEqual([o.chrono, Math.round(o.when / 1000) - NOW], [true, 1500]);
+    await fire('pomo_stop');
+    assert.strictEqual(await ongoing(), null);
+    assert.ok(/Hazır/.test(await text(page, '#pomo-label')));
+    await act(page, 'focusstart');
+    o = await ongoing();
+    assert.deepStrictEqual([o.kind, o.title, o.chrono, o.countdown, Math.round(o.when / 1000) - NOW], ['focus', 'Odak oturumu', true, false, 300]);
+    await advance(page, 120);
+    await fire('focus_pause');
+    assert.strictEqual((await ongoing()).text, 'Duraklatıldı · geçen 02:00');
+    await fire('focus_stop');
+    assert.strictEqual(await ongoing(), null);
+    assert.strictEqual((await page.evaluate(() => JSON.parse(localStorage.getItem('spy.sessions')))).filter((x) => x.kind === 'focus').length, 1);
+    // bildirimler kapalıysa kalıcı bildirim de gösterilmez
+    await act(page, 'pomostart');
+    assert.ok(await ongoing());
+    await nav(page, 'settings');
+    await act(page, 'toggle', 'notify');
+    assert.strictEqual(await ongoing(), null);
+    await fire('focus_stop');   // geçersiz/eskimiş eylem sessizce yok sayılır
+    assert.deepStrictEqual(page.errors, []);
+    await page.context().close();
+  });
+
   await test('Spy sohbeti: 8 sorunun hepsi cevaplanır', async () => {
     const page = await open(browser, 'lang=tr');
     await nav(page, 'spy');

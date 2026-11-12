@@ -12,5 +12,15 @@ public final class AlarmReceiver extends BroadcastReceiver {
         String title = intent.getStringExtra("title");
         String text = intent.getStringExtra("text");
         Notifier.show(context, intent.getIntExtra("id", 100), title == null ? "Spy" : title, text == null ? "" : text);
+        // Kalıcı oturum bildirimi: sonraki aşamaya geçir ya da (set bittiyse) kaldır.
+        if (intent.getBooleanExtra("ongoing", false)) {
+            long nextEnd = intent.getLongExtra("nextEnd", 0);
+            if (nextEnd > 0) {
+                Notifier.ongoing(context, "pomo", intent.getStringExtra("nextTitle"), intent.getStringExtra("nextText"), nextEnd, true, true,
+                        intent.getStringExtra("pauseLabel"), intent.getStringExtra("stopLabel"));
+            } else {
+                Notifier.clearOngoing(context);
+            }
+        }
     }
 }

@@ -114,6 +114,10 @@
       setExcluded: function (json) { var ex = JSON.parse(json); events = events.filter(function (ev) { return ex.indexOf(ev[2]) < 0; }); },
       sha512Hex: null, requestNotifications: function () { }, notify: function (title, text) { console.log('[bildirim]', title, text); },
       scheduleAlarm: function (slot, at, title, text) { alarms[slot] = { at: at, title: title, text: text }; },
+      scheduleAlarmEx: function (slot, at, title, text, nextTitle, nextText, nextEnd) { alarms[slot] = { at: at, title: title, text: text, nextTitle: nextTitle, nextText: nextText, nextEnd: nextEnd }; },
+      showOngoing: function (kind, title, text, when, chrono, countdown, pauseLabel, stopLabel) { this._ongoing = { kind: kind, title: title, text: text, when: when, chrono: chrono, countdown: countdown, pauseLabel: pauseLabel, stopLabel: stopLabel }; },
+      clearOngoing: function () { this._ongoing = null; }, _ongoing: null, _action: '',
+      takeAction: function () { var a = this._action; this._action = ''; return a; },
       cancelAlarms: function () { alarms.length = 0; }, vibrate: function () { },
       saveFile: function (name, mime, content) {
         try {
@@ -164,6 +168,10 @@
     notify: function (title, text) { J.notify(title, text); },
     scheduleAlarm: function (slot, atMs, title, text) { J.scheduleAlarm(slot, atMs, title, text); },
     cancelAlarms: function () { J.cancelAlarms(); },
+    scheduleAlarmEx: function (slot, atMs, title, text, nextTitle, nextText, nextEndMs, pauseLabel, stopLabel) { J.scheduleAlarmEx(slot, atMs, title, text, nextTitle, nextText, nextEndMs, pauseLabel, stopLabel); },
+    showOngoing: function (kind, title, text, whenMs, chrono, countdown, pauseLabel, stopLabel) { J.showOngoing(kind, title, text, whenMs, !!chrono, !!countdown, pauseLabel, stopLabel); },
+    clearOngoing: function () { J.clearOngoing(); },
+    takeAction: function () { return J.takeAction() || ''; },
     vibrate: function (ms) { J.vibrate(ms); },
     saveFile: function (name, mime, content) { J.saveFile(name, mime, content); },
     pickFile: function () { J.pickFile(); },

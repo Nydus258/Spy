@@ -166,21 +166,18 @@ public final class Bridge {
         Notifier.show(app, 90, title, text);
     }
 
-    private PendingIntent alarmIntent(int slot, String title, String text) {
+    private PendingIntent alarmIntent(int slot, Intent extras) {
         Intent i = new Intent(app, AlarmReceiver.class);
         i.setAction("com.spyapp.mobile.ALARM_" + slot);
         i.putExtra("id", ALARM_BASE + slot);
-        if (title != null) i.putExtra("title", title);
-        if (text != null) i.putExtra("text", text);
+        if (extras != null) i.putExtras(extras);
         return PendingIntent.getBroadcast(app, ALARM_BASE + slot, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
-    /** slot: 0..15. atMs anında bildirim gösterir (uygulama kapalı olsa da). */
-    @JavascriptInterface
-    public void scheduleAlarm(int slot, double atMs, String title, String text) {
+    private void setAlarm(int slot, double atMs, Intent extras) {
         if (slot < 0 || slot >= ALARM_SLOTS) return;
         AlarmManager am = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pi = alarmIntent(slot, title, text);
+        PendingIntent pi = alarmIntent(slot, extras);
         long at = (long) atMs;
         try {
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
@@ -192,12 +189,43 @@ public final class Bridge {
         }
     }
 
+    /** slot: 0..15. atMs anında bildirim gösterir (uygulama kapalı olsa da). */
+    @JavascriptInterface
+    public void scheduleAlarm(int slot, double atMs, String title, String text) {
+        setAlarm(slot, atMs, new Intent().putExtra("title", title).putExtra("text", text));
+    }
+
+    /** scheduleAlarm + kalıcı oturum bildirimini sonraki aşamaya geçirir (nextEndMs = 0 ise kaldırır). */
+    @JavascriptInterface
+    public void scheduleAlarmEx(int slot, double atMs, String title, String text, String nextTitle, String nextText, double nextEndMs,
+                                String pauseLabel, String stopLabel) {
+        setAlarm(slot, atMs, new Intent().putExtra("title", title).putExtra("text", text).putExtra("ongoing", true)
+                .putExtra("nextTitle", nextTitle).putExtra("nextText", nextText).putExtra("nextEnd", (long) nextEndMs)
+                .putExtra("pauseLabel", pauseLabel).putExtra("stopLabel", stopLabel));
+    }
+
+    @JavascriptInterface
+    public void showOngoing(String kind, String title, String text, double whenMs, boolean chrono, boolean countdown, String pauseLabel, String stopLabel) {
+        Notifier.ongoing(app, kind, title, text, (long) whenMs, chrono, countdown, pauseLabel, stopLabel);
+    }
+
+    @JavascriptInterface
+    public void clearOngoing() {
+        Notifier.clearOngoing(app);
+    }
+
+    /** Bildirim düğmesinden gelen bekleyen eylem ("pomo_pause", "focus_stop"...); yoksa "". Okununca silinir. */
+    @JavascriptInterface
+    public String takeAction() {
+        return activity.takeAction();
+    }
+
     @JavascriptInterface
     public void cancelAlarms() {
         AlarmManager am = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
         for (int slot = 0; slot < ALARM_SLOTS; slot++) {
             try {
-                am.cancel(alarmIntent(slot, null, null));
+                am.cancel(alarmIntent(slot, null));
             } catch (Throwable ignored) {
             }
         }

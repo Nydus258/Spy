@@ -360,10 +360,37 @@
     if (state === 'short_break') return [t('Çalışma zamanı'), t('Mola bitti. Çalışma {}/{} başlıyor ({} dk).', round + 1, C.Pomodoro.ROUNDS, pomo.work_min)];
     return [t('Set tamamlandı 🎉'), t('Pomodoro seti bitti. Eline sağlık!')];
   }
+  function phaseLabel(state, round) {
+    return state === 'work' ? t('Çalışma {}/{}', round, C.Pomodoro.ROUNDS) : state === 'short_break' ? t('Kısa mola') : t('Uzun mola');
+  }
+  function phaseNext(state, round) {
+    if (state === 'work') return round < C.Pomodoro.ROUNDS ? t('Sonra: {} dk kısa mola', pomo.short_min) : t('Sonra: {} dk uzun mola', pomo.long_min);
+    if (state === 'short_break') return t('Sonra: çalışma {}/{} ({} dk)', round + 1, C.Pomodoro.ROUNDS, pomo.work_min);
+    return t('Sonra: set tamamlanır');
+  }
+  /** Bildirim çubuğundaki kalıcı oturum bildirimi (Pomodoro: geri sayım, odak: geçen süre). */
+  function updateOngoing() {
+    var now = N.now();
+    if (!prefs.notify) { N.clearOngoing(); return; }
+    if (pomo.running()) {
+      if (pomo.paused) N.showOngoing('pomo', 'Pomodoro · ' + phaseLabel(pomo.state, pomo.round), t('Duraklatıldı · kalan {}', C.fmtClock(pomo.remaining(now))), 0, false, false, t('Devam et'), t('Bitir'));
+      else N.showOngoing('pomo', 'Pomodoro · ' + phaseLabel(pomo.state, pomo.round), phaseNext(pomo.state, pomo.round), pomo.end_at * 1000, true, true, t('Duraklat'), t('Bitir'));
+    } else if (focus) {
+      if (focusPaused()) N.showOngoing('focus', t('Odak oturumu'), t('Duraklatıldı · geçen {}', C.fmtClock(focusElapsed(now))), 0, false, false, t('Devam et'), t('Bitir'));
+      else N.showOngoing('focus', t('Odak oturumu'), t('Odak oturumu sürüyor'), (now - focusElapsed(now)) * 1000, true, false, t('Duraklat'), t('Bitir'));
+    } else N.clearOngoing();
+  }
   function savePomo() {
     save('spy.pomo', pomo.toJSON());
     N.cancelAlarms();
-    if (prefs.notify) pomo.schedule(N.now()).forEach(function (x, i) { var tx = pomoTexts(x.state, x.round); N.scheduleAlarm(i, x.at * 1000, tx[0], tx[1]); });
+    if (prefs.notify) {
+      var plan = pomo.schedule(N.now());
+      plan.forEach(function (x, i) {
+        var tx = pomoTexts(x.state, x.round), nx = plan[i + 1];
+        N.scheduleAlarmEx(i, x.at * 1000, tx[0], tx[1], nx ? 'Pomodoro · ' + phaseLabel(nx.state, nx.round) : '', nx ? phaseNext(nx.state, nx.round) : '', nx ? nx.at * 1000 : 0, t('Duraklat'), t('Bitir'));
+      });
+    }
+    updateOngoing();
   }
   function handlePomoEvents(events, silent) {
     if (!events.length) return;
@@ -541,7 +568,7 @@
       setRow(t('Günlük hedef'), t('Günlük üretken süre hedefi'), '<div class="mini-step"><button data-act="goal" data-arg="-1">−</button><b>' + (prefs.goalHours ? prefs.goalHours + ' ' + esc(t('saat')) : esc(t('Yok'))) + '</b><button data-act="goal" data-arg="1">+</button></div>') +
       setRow(t('Hariç tutulan uygulamalar'), prefs.excluded.length ? t('{} uygulama kaydedilmiyor', prefs.excluded.length) : t('Seçtiğin uygulamalar hiç kaydedilmez.'), '<button class="chip act" data-act="excluded">' + esc(t('Düzenle')) + '</button>') + '</div>';
     html += '<div class="section-title">' + esc(t('Bildirimler')) + '</div><div class="panel">' +
-      setRow(t('Pomodoro bildirimleri'), t('Çalışma ve mola bittiğinde haber verir (uygulama kapalıyken de).'), switchHtml(prefs.notify, 'toggle', 'notify')) +
+      setRow(t('Oturum bildirimleri'), t('Oturum sürerken bildirim çubuğunda kalan süreyi gösterir; çalışma ve mola bittiğinde haber verir.'), switchHtml(prefs.notify, 'toggle', 'notify')) +
       setRow(t('Titreşim'), '', switchHtml(prefs.vibrate, 'toggle', 'vibrate')) + '</div>';
     html += '<div class="section-title">' + esc(t('Veri')) + '</div><div class="panel">' +
       setRow(t('Verileri otomatik sil'), t('Seçilen süreden eski kayıtlar silinir.'), '<button class="chip act" data-act="retention">' + esc(retentionLabel(prefs.retention)) + ' ▾</button>') +
@@ -716,13 +743,13 @@
       if (pomo.running()) return;
       focus = { start: N.now(), pauses: [], ignored: {} }; save('spy.focus', focus);
       if (prefs.notify) N.requestNotifications();
-      refreshFocusLive(); render(true); toast(t('Odak oturumu başladı. İyi çalışmalar!'));
+      refreshFocusLive(); updateOngoing(); render(true); toast(t('Odak oturumu başladı. İyi çalışmalar!'));
     },
     focuspause: function () {
       if (!focus) return;
       var now = N.now();
       if (focusPaused()) focus.pauses[focus.pauses.length - 1][1] = now; else focus.pauses.push([now, 0]);
-      save('spy.focus', focus); refreshFocusLive(); render(true);
+      save('spy.focus', focus); refreshFocusLive(); updateOngoing(); render(true);
     },
     focusstop: function () {
       if (!focus) return;
@@ -732,7 +759,7 @@
       var live = S.focusLive, elapsed = focusElapsed(now);
       if (elapsed >= 60) { addSession('focus', focus.start, now, elapsed, live.interruptions); toast(t('Oturum bitti: {} · skor {}% · {} kesinti', short(elapsed), live.score, live.interruptions)); }
       else toast(t('Oturum 1 dakikadan kısa olduğu için kaydedilmedi.'));
-      focus = null; save('spy.focus', null); S.focusLive = null; refresh(); render(true);
+      focus = null; save('spy.focus', null); S.focusLive = null; updateOngoing(); refresh(); render(true);
     },
     ignore: function (arg) { if (!focus) return; focus.ignored[arg] = true; save('spy.focus', focus); refreshFocusLive(); render(true); toast(t('{} bu oturumda kesinti sayılmayacak.', appName(arg))); },
     ikey: function (arg) {
@@ -842,10 +869,23 @@
     refresh();
     handlePomoEvents(pomo.catchUp(N.now()), false);
     if (focus) refreshFocusLive();
+    updateOngoing();
     if (S.license.state === 'expired' && !wasExpired) toast(t('Deneme süresi doldu'));
     if (!S.chatBusy) render(true);
+    runPendingAction();
   };
   window.onSpyPause = function () { };
+  /** Bildirimdeki Duraklat/Devam et/Bitir düğmeleri uygulamayı açar ve eylemi buraya bırakır. */
+  function runPendingAction() {
+    var action = N.takeAction();
+    if (!action) return;
+    if (S.sheet && !S.sheet.modal) closeSheet();
+    if (action === 'pomo_pause' && pomo.running()) { go('focus'); ACT.pomopause(); }
+    else if (action === 'pomo_stop' && pomo.running()) { go('focus'); ACT.pomostop(); }
+    else if (action === 'focus_pause' && focus) { go('focus'); ACT.focuspause(); }
+    else if (action === 'focus_stop' && focus) { go('focus'); ACT.focusstop(); }
+    else updateOngoing();
+  }
   /** Geri tuşu: açık alt sayfayı kapatır, sonra Genel'e döner; işlenmediyse false (uygulama arka plana gider). */
   window.onSpyBack = function () {
     if (S.sheet) { if (!S.sheet.modal) closeSheet(); return true; }
@@ -861,7 +901,9 @@
     refresh();
     handlePomoEvents(pomo.catchUp(N.now()), true);
     if (focus) refreshFocusLive();
+    updateOngoing();
     render(false);
+    runPendingAction();
     setInterval(tick, 1000);
     if (!prefs.onboarded) { if (S.access) setPref('onboarded', true); else onboarding(); }
   }

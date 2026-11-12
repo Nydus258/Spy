@@ -31,6 +31,7 @@ public final class MainActivity extends Activity {
 
     private WebView web;
     private String pendingContent;
+    private volatile String pendingAction = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +70,29 @@ public final class MainActivity extends Activity {
             }
         });
         setContentView(web);
+        readAction(getIntent());
         web.loadUrl(HOME);
+    }
+
+    private void readAction(Intent intent) {
+        String action = intent == null ? null : intent.getStringExtra("spy_action");
+        if (action != null) {
+            pendingAction = action;
+            intent.removeExtra("spy_action");
+        }
+    }
+
+    String takeAction() {
+        String action = pendingAction;
+        pendingAction = "";
+        return action;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        readAction(intent);
     }
 
     void js(final String script) {
