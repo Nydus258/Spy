@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.spyapp.mobile"
-    android:versionCode="10406"
+    android:versionCode="10407"
     android:versionName="1.4.5">
 
     <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="34" />

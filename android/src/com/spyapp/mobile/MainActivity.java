@@ -40,7 +40,7 @@ public final class MainActivity extends Activity {
         getWindow().setNavigationBarColor(BACKGROUND);
 
         web = new WebView(this);
-        web.setBackgroundColor(BACKGROUND);
+        web.setBackgroundColor(0xFF1C1950);  // açılış animasyonunun zemini; sayfa yüklenince kendi zemini örter
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);

@@ -225,3 +225,12 @@ h1 { margin: 6px 0 0; font-size: 28px; line-height: 1.1; font-weight: 800; lette
 #toast-root { position: fixed; left: 0; right: 0; bottom: calc(78px + var(--safe-b)); display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 30; pointer-events: none; }
 .toast { background: #252e45; color: #fff; border-radius: 12px; padding: 10px 14px; font-size: 13px; max-width: 88%; box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
   animation: fade .2s ease both; border-left: 3px solid var(--accent); }
+
+/* ---------- açılış animasyonu (site ile aynı zemin ve göz) */
+#splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 46%, #2b2474 0%, #1c1950 56%, #120f36 100%); transition: opacity .35s ease; }
+#splash svg { width: min(760px, 86vw); height: auto; display: block; overflow: visible; }
+#splash-word { margin-top: 26px; font-size: 22px; font-weight: 800; letter-spacing: .32em; padding-left: .32em; color: #e9e5ff; opacity: 0; transform: translateY(8px);
+  transition: opacity .4s ease, transform .4s ease; }
+#splash.open #splash-word { opacity: 1; transform: none; }
+#splash.hide { opacity: 0; pointer-events: none; }

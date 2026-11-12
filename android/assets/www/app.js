@@ -893,6 +893,32 @@
     return false;
   };
 
+  /** Açılış: sitedeki kapalı gözün açılması (aynı eğri ve yumuşatma). Yalnızca uygulama ilk açıldığında oynar. */
+  function splash() {
+    var el = $('#splash');
+    if (!el) return;
+    var remove = function () { if (el.parentNode) el.parentNode.removeChild(el); };
+    if (!prefs.animations) { remove(); return; }
+    var lid = $('#spl-lid'), clip = $('#spl-clip-path'), DUR = 500, t0 = null;
+    var ease = function (x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+    var setEye = function (o) {
+      var d = 'M40 180 Q360 ' + (320 - 370 * o).toFixed(1) + ' 680 180 Q360 ' + (320 + 90 * o).toFixed(1) + ' 40 180 Z';
+      lid.setAttribute('d', d); clip.setAttribute('d', d);
+    };
+    var finish = function () {
+      el.classList.add('open');
+      setTimeout(function () { el.classList.add('hide'); setTimeout(remove, 400); }, 650);
+    };
+    var frame = function (ts) {
+      if (t0 === null) t0 = ts;
+      var p = Math.min(1, (ts - t0) / DUR);
+      setEye(ease(p));
+      if (p < 1) requestAnimationFrame(frame); else finish();
+    };
+    setTimeout(function () { requestAnimationFrame(frame); }, 350);
+    setTimeout(remove, 4000);   // güvenlik: animasyon bir nedenle takılırsa açılış ekranı kalmasın
+  }
+
   function boot() {
     document.documentElement.lang = lang;
     refreshLicense();
@@ -905,8 +931,9 @@
     render(false);
     runPendingAction();
     setInterval(tick, 1000);
+    splash();
     if (!prefs.onboarded) { if (S.access) setPref('onboarded', true); else onboarding(); }
   }
   window.SpyApp = { state: S, prefs: prefs, go: go, render: render, refresh: refresh, t: t };
-  boot();
+  try { boot(); } catch (e) { var sp = $('#splash'); if (sp) sp.parentNode.removeChild(sp); throw e; }
 })();

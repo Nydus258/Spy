@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="spy_bg">#0B0F1A</color>
+    <color name="spy_splash">#1C1950</color>
     <style name="SpyTheme" parent="@android:style/Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/spy_bg</item>
+        <item name="android:windowBackground">@color/spy_splash</item>
         <item name="android:statusBarColor">@color/spy_bg</item>
         <item name="android:navigationBarColor">@color/spy_bg</item>
         <item name="android:colorAccent">#7C4DFF</item>

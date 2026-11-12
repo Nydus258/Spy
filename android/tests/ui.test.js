@@ -9,7 +9,7 @@ const URL = 'file://' + path.resolve(__dirname, '../assets/www/index.html');
 const NOW = Math.floor(new Date(2026, 10, 11, 21, 30).getTime() / 1000);
 let passed = 0;
 
-async function open(browser, query, init) {
+async function open(browser, query, init, keepSplash) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
   page.errors = [];
@@ -18,6 +18,7 @@ async function open(browser, query, init) {
   if (init) await page.addInitScript(init);
   await page.goto(URL + '?now=' + NOW + (query ? '&' + query : ''));
   await page.waitForSelector('#nav button');
+  if (!keepSplash) await page.evaluate(() => { const s = document.querySelector('#splash'); if (s) s.remove(); });
   return page;
 }
 const text = (page, sel) => page.locator(sel).innerText();
@@ -50,6 +51,22 @@ async function test(name, fn) { await fn(); passed++; console.log('  ok  ' + nam
       assert.deepStrictEqual(page.errors, []);
       await page.context().close();
     }
+  });
+
+  await test('Açılış animasyonu: kapalı göz açılır, sonra ekran kalkar; animasyon kapalıysa hiç gösterilmez', async () => {
+    const page = await open(browser, 'lang=tr', null, true);
+    const closed = 'M40 180 Q360 320 680 180 Q360 320 40 180 Z';
+    assert.strictEqual(await page.locator('#splash').count(), 1);
+    assert.strictEqual(await page.getAttribute('#spl-lid', 'd'), closed, 'kapalı gözle başlar');
+    await page.waitForFunction(() => document.querySelector('#spl-lid') && document.querySelector('#spl-lid').getAttribute('d') === 'M40 180 Q360 -50.0 680 180 Q360 410.0 40 180 Z');
+    assert.strictEqual(await page.getAttribute('#spl-clip-path', 'd'), await page.getAttribute('#spl-lid', 'd'));
+    await page.waitForFunction(() => !document.querySelector('#splash'), null, { timeout: 5000 });
+    assert.ok((await text(page, '#view')).length > 40, 'altında uygulama hazır');
+    await page.context().close();
+    const off = await open(browser, 'lang=tr', `localStorage.setItem('spy.prefs', JSON.stringify({ animations: false }))`);
+    assert.strictEqual(await off.locator('#splash').count(), 0);
+    assert.deepStrictEqual(off.errors, []);
+    await off.context().close();
   });
 
   await test('Genel: toplamlar tutarlı', async () => {
