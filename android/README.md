@@ -5,9 +5,11 @@ veriler telefonda kalır (uygulamanın internet izni yoktur).
 
 Android 6.0 ve üzeri. **Google Play sürümü:** [`dist/Spy-1.4.5-play.aab`](dist/Spy-1.4.5-play.aab) — yayın adımları için
 [`store/YAYIN-REHBERI.md`](store/YAYIN-REHBERI.md). Play sürümünde Spy Pro tek seferlik Google Play satın alımıdır
-(lisans anahtarı girişi yoktur). `dist/Spy-1.4.5.apk`, Play öncesi elle kurulan eski deneme sürümüdür (lisans anahtarlı).
+(lisans anahtarı girişi yoktur). `dist/Spy-1.4.5.apk`, aynı Play sürümünün telefona elle kurulabilen önizleme paketidir
+(Play'den kurulmadığı için satın alma çalışmaz; 3 günlük deneme sonunda takip durur). Daha önce elle kurulan eski
+sürümün üzerine kurulmaz: önce onu kaldır.
 
-## Kurulum (telefonda, eski deneme APK'sı)
+## Kurulum (telefonda, önizleme APK'sı)
 
 1. `dist/Spy-1.4.5.apk` dosyasını telefona indir ve aç; "bilinmeyen kaynaklardan yükleme" izni istenirse onayla.
 2. Spy'ı aç, **İzni aç**'a dokun ve açılan listede Spy için **Kullanım erişimi**'ni etkinleştir.
