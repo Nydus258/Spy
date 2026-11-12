@@ -149,7 +149,7 @@ h1 { margin: 6px 0 0; font-size: 28px; line-height: 1.1; font-weight: 800; lette
 .chip.act { color: var(--text); border: 1px solid var(--line); }
 
 /* ---------- Spy sohbeti */
-.eye { border-radius: 26%; flex: none; display: block; }
+.eye { flex: none; display: block; }
 .hello { display: flex; gap: 12px; align-items: center; }
 .hello b { font-size: 17px; } .hello p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
 .chat { display: flex; flex-direction: column; gap: 10px; }

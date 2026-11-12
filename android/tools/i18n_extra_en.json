@@ -188,5 +188,7 @@
 "Odak oturumu": "Focus session",
 "Bitir": "End",
 "Oturum bildirimleri": "Session notifications",
-"Oturum sürerken bildirim çubuğunda kalan süreyi gösterir; çalışma ve mola bittiğinde haber verir.": "Shows the remaining time in the notification bar during a session and tells you when work and breaks end."
+"Oturum sürerken bildirim çubuğunda kalan süreyi gösterir; çalışma ve mola bittiğinde haber verir.": "Shows the remaining time in the notification bar during a session and tells you when work and breaks end.",
+"Sesler": "Sounds",
+"Spy düşünürken, cevap verirken ve oturum başlarken kısa sesler çalar.": "Plays short sounds when Spy is thinking, answering and when a session starts."
 }

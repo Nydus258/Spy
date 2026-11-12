@@ -218,6 +218,49 @@ async function test(name, fn) { await fn(); passed++; console.log('  ok  ' + nam
     await page.context().close();
   });
 
+  await test('Spy gözü ve sesler: ruh halleri çizilir, canlanır; sesler doğru anlarda çalar ve kapatılabilir', async () => {
+    const page = await open(browser, 'lang=tr');
+    const pixels = (sel) => page.evaluate((q) => { const c = document.querySelector(q); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let n = 0, h = 0; for (let i = 0; i < d.length; i += 4) { if (d[i + 3] > 0) n++; h = (h * 31 + d[i] + d[i + 1] * 3 + d[i + 2] * 7) >>> 0; } return { n, h, w: c.width }; }, sel);
+    await nav(page, 'spy');
+    assert.strictEqual(await page.getAttribute('#hero-eye', 'data-mood'), 'normal');
+    const first = await pixels('#hero-eye');
+    assert.ok(first.n > first.w * first.w * 0.8, 'göz çizildi');
+    await act(page, 'ask', 'focus');
+    assert.strictEqual(await page.getAttribute('#hero-eye', 'data-mood'), 'loading', 'düşünürken yükleniyor gözü');
+    const l1 = await pixels('#hero-eye');
+    await page.waitForTimeout(200);
+    const l2 = await pixels('#hero-eye');
+    assert.notStrictEqual(l1.h, l2.h, 'yükleniyor gözü hareket ediyor (halka döner)');
+    await page.waitForFunction(() => !window.SpyApp.state.chatBusy);
+    const mood = await page.evaluate(() => window.SpyApp.state.chat[1].mood);
+    assert.strictEqual(await page.getAttribute('#hero-eye', 'data-mood'), mood, 'cevabın ruh hali üst gözde');
+    assert.strictEqual(await page.locator('#chat canvas.eye[data-mood="' + mood + '"]').count(), 1);
+    assert.deepStrictEqual(await page.evaluate(() => window._sounds), ['think', 'answer']);
+    // her ruh hali farklı bir çizim üretir
+    const hashes = await page.evaluate(() => Object.keys(window.SpyCore.MASCOT_MOODS).map((m) => { const c = document.createElement('canvas'); c.width = c.height = 96; window.SpyCore.drawMascot(c.getContext('2d'), 96, m, window.SpyCore.mascotState(m, 1.0, false)); const d = c.getContext('2d').getImageData(0, 0, 96, 96).data; let h = 0; for (let i = 0; i < d.length; i += 4) h = (h * 31 + d[i] + d[i + 1] * 3 + d[i + 2] * 7) >>> 0; return h; }));
+    assert.strictEqual(new Set(hashes).size, 10, '10 ruh hali, 10 farklı göz');
+    await nav(page, 'focus');
+    await act(page, 'focusstart');
+    assert.strictEqual(await page.locator('#view canvas.eye[data-mood="focus"]').count(), 1);
+    await act(page, 'focuspause');
+    assert.strictEqual(await page.locator('#view canvas.eye[data-mood="sleepy"]').count(), 1);
+    await act(page, 'focusstop');
+    await act(page, 'pomostart');
+    assert.deepStrictEqual(await page.evaluate(() => window._sounds), ['think', 'answer', 'arp', 'arp']);
+    await advance(page, 1510);
+    await page.waitForFunction(() => window._sounds.length === 5);   // çalışma bitti: mola bildirimi sesi
+    await act(page, 'pomostop');
+    for (const f of ['think', 'answer', 'arp']) { const b = require('fs').readFileSync(path.resolve(__dirname, '../assets/www/sounds/' + f + '.wav')); assert.ok(b.length > 10000 && b.slice(0, 4).toString() === 'RIFF', f + '.wav'); }
+    await nav(page, 'settings');
+    await act(page, 'toggle', 'sounds');
+    await nav(page, 'spy');
+    await act(page, 'ask', 'tip');
+    await page.waitForFunction(() => !window.SpyApp.state.chatBusy);
+    assert.strictEqual(await page.evaluate(() => window._sounds.length), 5, 'sesler kapalıyken çalmaz');
+    assert.deepStrictEqual(page.errors, []);
+    await page.context().close();
+  });
+
   await test('Yönetim: kategori değiştirme anında işler ve geri alınır', async () => {
     const page = await open(browser, 'lang=tr');
     const before = await page.evaluate(() => window.SpyApp.state.today.cats.distraction);

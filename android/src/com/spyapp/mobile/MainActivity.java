@@ -51,6 +51,7 @@ public final class MainActivity extends Activity {
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(false);
         s.setTextZoom(100);
+        s.setMediaPlaybackRequiresUserGesture(false);  // Spy'ın kısa sesleri (cevap gecikmeli geldiği için dokunuş dışında da çalar)
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         web.addJavascriptInterface(new Bridge(this), "SpyNative");

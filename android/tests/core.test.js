@@ -212,6 +212,23 @@ test('Spy cevapları: her soru metin ve ruh hali döndürür', () => {
   C.ACTIONS.forEach((a) => assert.strictEqual(C.answerFor(a[2], empty)[1], 'sleepy', a[2]));
   assert.strictEqual(C.analysisText(empty.week, empty)[1], 'sleepy');
 });
+test('Spy gözü: ruh hali tablosu, kırpma, durum ve kapak kenarı masaüstü ile aynı', () => {
+  const m = require('./mascot_reference.json');
+  const close = (a, b, what) => assert.ok(Math.abs(a - b) < 1e-9, what + ': ' + a + ' != ' + b);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(C.MASCOT_MOODS)), m.moods);
+  assert.deepStrictEqual(Object.keys(C.MASCOT_MOODS), ['normal', 'focus', 'warning', 'thinking', 'loading', 'happy', 'sleepy', 'worried', 'sad', 'angry']);
+  m.blink.forEach(([k, t, e, want]) => close(C.blinkClosure(k, t, e), want, `blink ${k} ${t} ${e}`));
+  m.state.forEach(([mood, t, animated, want]) => {
+    const got = C.mascotState(mood, t, animated);
+    assert.deepStrictEqual(Object.keys(got).sort(), Object.keys(want).sort());
+    Object.keys(want).forEach((k) => close(got[k], want[k], `state ${mood} t=${t} ${animated} ${k}`));
+  });
+  m.lid.forEach(([mood, want]) => {
+    const c = C.MASCOT_MOODS[mood], got = C.mascotLidEdge(c.lid, c.shape, 50, 54, 38, 25);
+    assert.strictEqual(got.length, want.length, mood);
+    got.forEach((p, i) => { close(p[0], want[i][0], mood + ' x' + i); close(p[1], want[i][1], mood + ' y' + i); });
+  });
+});
 test('CSV kaçışları', () => {
   assert.strictEqual(C.toCsv([['a', 'b,c'], ['d"e', 1]]), '﻿a,"b,c"\r\n"d""e",1\r\n');
 });

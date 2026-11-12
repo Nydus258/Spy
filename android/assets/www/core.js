@@ -697,6 +697,100 @@
     return { state: 'trial', days_left: Math.max(1, TRIAL_DAYS - Math.floor((now - first) / 86400)), license_id: '' };
   }
 
+  // ---------------------------------------------------------------- Spy gözü (widgets.py: SpyMascot)
+  // Ruh hali tablosu masaüstündeki MASCOT_MOODS ile aynıdır.
+  var MASCOT_MOODS = {"normal": {"ring": ["#2dd4a0", "#7c4dff"], "bg": ["#41378f", "#1d1950"], "white": "#e7e1fb", "lid": null, "shape": "poly", "every": 4.0, "kind": "single", "droop": 0.0, "smile": 0.0, "widen": 1.0, "look": 0.0, "spin": 0, "shake": 0.0, "bounce": 0.0, "tear": false}, "focus": {"ring": ["#22c55e", "#15803d"], "bg": ["#2c4a7a", "#16224a"], "white": "#e4f3ee", "lid": [0.55, 0.55, 0.55], "shape": "poly", "every": 7.0, "kind": "slow", "droop": 0.0, "smile": 0.0, "widen": 1.0, "look": 0.0, "spin": 0, "shake": 0.0, "bounce": 0.0, "tear": false}, "warning": {"ring": ["#ff9f43", "#ff4d67"], "bg": ["#7a4a1d", "#3d1f12"], "white": "#fff0dc", "lid": null, "shape": "poly", "every": 1.8, "kind": "double", "droop": 0.0, "smile": 0.0, "widen": 1.18, "look": 0.0, "spin": 0, "shake": 0.0, "bounce": 0.0, "tear": false}, "thinking": {"ring": ["#a78bfa", "#7c4dff"], "bg": ["#41378f", "#1d1950"], "white": "#e7e1fb", "lid": [0.05, 0.75, 1.45], "shape": "poly", "every": 2.6, "kind": "single", "droop": 0.0, "smile": 0.0, "widen": 1.0, "look": 2.4, "spin": 0, "shake": 0.0, "bounce": 0.0, "tear": false}, "loading": {"ring": ["#7dd3fc", "#a78bfa"], "bg": ["#41378f", "#1d1950"], "white": "#e7e1fb", "lid": [0.35, 0.9, 1.45], "shape": "poly", "every": 3.0, "kind": "single", "droop": 0.0, "smile": 0.0, "widen": 1.0, "look": 1.6, "spin": 330, "shake": 0.0, "bounce": 0.0, "tear": false}, "happy": {"ring": ["#facc15", "#22c55e"], "bg": ["#5a3f9a", "#2a2065"], "white": "#fff6d6", "lid": [0.3, 1.5, 0.3], "shape": "curve", "every": 3.2, "kind": "single", "droop": 0.0, "smile": 0.55, "widen": 1.0, "look": 0.0, "spin": 0, "shake": 0.0, "bounce": 0.02, "tear": false}, "sleepy": {"ring": ["#94a3b8", "#64748b"], "bg": ["#33385c", "#1a1d38"], "white": "#d9deee", "lid": [0.1, 0.1, 0.1], "shape": "poly", "every": 5.0, "kind": "slow", "droop": 0.15, "smile": 0.0, "widen": 1.0, "look": 0.0, "spin": 0, "shake": 0.0, "bounce": 0.0, "tear": false}, "worried": {"ring": ["#f59e0b", "#f97316"], "bg": ["#6b4a2a", "#33210f"], "white": "#fff1dc", "lid": [-0.9, 1.15, -0.9], "shape": "poly", "every": 2.2, "kind": "double", "droop": 0.0, "smile": 0.0, "widen": 1.05, "look": 0.0, "spin": 0, "shake": 0.004, "bounce": 0.0, "tear": false}, "sad": {"ring": ["#60a5fa", "#3b82f6"], "bg": ["#2b3f73", "#141e45"], "white": "#dbe8fb", "lid": [-1.6, 1.0, -1.6], "shape": "poly", "every": 4.5, "kind": "slow", "droop": 0.12, "smile": 0.0, "widen": 1.0, "look": 0.0, "spin": 0, "shake": 0.0, "bounce": 0.0, "tear": true}, "angry": {"ring": ["#ff3b4e", "#b91c1c"], "bg": ["#8a1d3b", "#3d0a1f"], "white": "#ffd3da", "lid": [1.7, 0.4, 1.7], "shape": "poly", "every": 6.5, "kind": "single", "droop": 0.0, "smile": 0.0, "widen": 0.95, "look": 0.0, "spin": 0, "shake": 0.012, "bounce": 0.0, "tear": false}};
+  /** Zamana (sn) göre göz kapanma miktarı: 0 = açık, 1 = tam kapalı. */
+  function blinkClosure(kind, t, every) {
+    var phase = t % every;
+    if (kind === 'double') {
+      var starts = [0.0, 0.26];
+      for (var i = 0; i < 2; i++) if (starts[i] <= phase && phase < starts[i] + 0.14) return Math.sin(Math.PI * (phase - starts[i]) / 0.14);
+      return 0;
+    }
+    var length = kind === 'slow' ? 0.55 : 0.18;
+    return phase < length ? Math.sin(Math.PI * phase / length) : 0;
+  }
+  /** animated=false ise kırpma/bakış/dönme/titreme/zıplama yoktur. */
+  function mascotState(mood, t, animated) {
+    var cfg = MASCOT_MOODS[mood] || MASCOT_MOODS.normal;
+    var st = { closure: 0, look: 0, droop: cfg.droop, smile: cfg.smile, widen: cfg.widen, shake: 0, bounce: 0, spin: 0, tear: cfg.tear ? 0.35 : -1 };
+    if (!animated) return st;
+    st.closure = blinkClosure(cfg.kind, t, cfg.every);
+    if (cfg.look) st.look = Math.sin(2 * Math.PI * t / cfg.look) * 0.8;
+    if (cfg.spin) st.spin = t * cfg.spin % 360;
+    if (cfg.shake) st.shake = cfg.shake * Math.sin(t * 55);
+    if (cfg.bounce) st.bounce = cfg.bounce * Math.abs(Math.sin(t * 5));
+    if (cfg.tear) st.tear = t % 2.4 / 2.4;
+    return st;
+  }
+  /** Üst göz kapağının kenar noktaları (soldan sağa). */
+  function mascotLidEdge(lid, shape, cx, cy, hw, hh0, n) {
+    n = n || 60;
+    var yl = cy - lid[0] * hh0, yc = cy - lid[1] * hh0, yr = cy - lid[2] * hh0, xl = cx - hw * 1.25, xr = cx + hw * 1.25;
+    if (shape === 'curve') {
+      var ctrl = 2 * yc - (yl + yr) / 2, pts = [];
+      for (var i = 0; i <= n; i++) {
+        var t = i / n, u = 1 - t;
+        pts.push([u * u * xl + 2 * u * t * cx + t * t * xr, u * u * yl + 2 * u * t * ctrl + t * t * yr]);
+      }
+      return pts;
+    }
+    return [[xl, yl], [cx, yc], [xr, yr]];
+  }
+  /** Gözü tuvale çizer (SpyMascot.paintEvent ile aynı geometri). s: kenar uzunluğu (px). */
+  function drawMascot(ctx, s, mood, st) {
+    var cfg = MASCOT_MOODS[mood] || MASCOT_MOODS.normal, i;
+    ctx.clearRect(0, 0, s, s);
+    ctx.save();
+    var bg = ctx.createLinearGradient(0, 0, s, s);
+    bg.addColorStop(0, cfg.bg[0]); bg.addColorStop(1, cfg.bg[1]);
+    var r = s * 0.22;
+    ctx.beginPath(); ctx.moveTo(r, 0); ctx.arcTo(s, 0, s, s, r); ctx.arcTo(s, s, 0, s, r); ctx.arcTo(0, s, 0, 0, r); ctx.arcTo(0, 0, s, 0, r); ctx.closePath();
+    ctx.fillStyle = bg; ctx.fill(); ctx.clip();
+    ctx.translate(st.shake * s, -st.bounce * s);
+    var cx = s / 2, cy = s * 0.54, hw = s * 0.38, hh0 = s * 0.25 * st.widen;
+    var hh = hh0 * Math.max(0.04, (1 - st.droop) * (1 - st.closure));
+    var almond = function () {
+      ctx.beginPath(); ctx.moveTo(cx - hw, cy);
+      ctx.quadraticCurveTo(cx, cy - 2 * hh, cx + hw, cy);
+      ctx.quadraticCurveTo(cx, cy + 2 * hh * (1 - st.smile), cx - hw, cy);
+      ctx.closePath();
+    };
+    var edge = cfg.lid ? mascotLidEdge(cfg.lid, cfg.shape, cx, cy, hw, hh0) : null;
+    ctx.save();
+    almond(); ctx.clip();
+    ctx.fillStyle = cfg.white; ctx.fillRect(0, 0, s, s);
+    var ix = cx + st.look * s * 0.07, radius = s * 0.19, ringR = radius * 0.8;
+    ctx.fillStyle = '#1c1a45'; ctx.beginPath(); ctx.arc(ix, cy, radius, 0, 2 * Math.PI); ctx.fill();
+    var a0 = -(90 - st.spin) * Math.PI / 180, stroke = cfg.ring[0];
+    if (ctx.createConicGradient) { stroke = ctx.createConicGradient(a0, ix, cy); stroke.addColorStop(0, cfg.ring[1]); stroke.addColorStop(1, cfg.ring[0]); }
+    ctx.strokeStyle = stroke; ctx.lineWidth = Math.max(1.5, s * 0.05); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(ix, cy, ringR, a0, a0 + 1.5 * Math.PI); ctx.stroke();
+    var pr = s * 0.075;
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(ix, cy, pr, 0, 2 * Math.PI); ctx.fill();
+    ctx.fillStyle = '#7c4dff'; ctx.beginPath(); ctx.arc(ix - pr * 0.35, cy - pr * 0.35, pr * 0.25, 0, 2 * Math.PI); ctx.fill();
+    if (edge) {
+      // göz kapağı: kenarın üstünde kalan bölge (badem içinde) kapak rengine boyanır, kenar boyunca ince çizgi çekilir
+      var n = parseInt(cfg.bg[0].slice(1), 16), ch = function (v) { return Math.min(255, Math.floor(v * 0.78 + 25)); };
+      ctx.fillStyle = 'rgb(' + ch(n >> 16 & 255) + ',' + ch(n >> 8 & 255) + ',' + ch(n & 255) + ')';
+      ctx.beginPath(); ctx.moveTo(edge[0][0], edge[0][1]);
+      for (i = 1; i < edge.length; i++) ctx.lineTo(edge[i][0], edge[i][1]);
+      ctx.lineTo(edge[edge.length - 1][0], cy - 4 * hh0); ctx.lineTo(edge[0][0], cy - 4 * hh0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = mood === 'angry' ? '#ffd0d6' : '#ffffff'; ctx.lineWidth = Math.max(1.6, s * 0.05); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(edge[0][0], edge[0][1]);
+      for (i = 1; i < edge.length; i++) ctx.lineTo(edge[i][0], edge[i][1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+    if (hh < s * 0.25 * 0.35) { almond(); ctx.strokeStyle = '#b9b0e6'; ctx.lineWidth = Math.max(1, s * 0.02); ctx.stroke(); }
+    if (st.tear >= 0) {
+      ctx.fillStyle = 'rgba(159,208,255,' + (230 / 255 * (1 - st.tear)).toFixed(3) + ')';
+      ctx.beginPath(); ctx.ellipse(cx + s * 0.22, cy + s * (0.16 + 0.14 * st.tear), s * 0.035, s * 0.05, 0, 0, 2 * Math.PI); ctx.fill();
+    }
+    ctx.restore();
+  }
+
   // ---------------------------------------------------------------- dışa aktarma
   function csvEscape(v) { v = String(v == null ? '' : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
   function toCsv(rows) { return '﻿' + rows.map(function (r) { return r.map(csvEscape).join(','); }).join('\r\n') + '\r\n'; }
@@ -710,6 +804,7 @@
     coachingTip: coachingTip, liveScore: liveScore, InterruptWatcher: InterruptWatcher, focusFromEvents: focusFromEvents,
     Pomodoro: Pomodoro, moodForFocus: moodForFocus, moodForDelta: moodForDelta, answerFor: answerFor, analysisText: analysisText,
     parseKey: parseKey, licenseStatus: licenseStatus, cleanKey: cleanKey, edVerify: edVerify, hexToBytes: hexToBytes, bytesToHex: bytesToHex,
+    MASCOT_MOODS: MASCOT_MOODS, blinkClosure: blinkClosure, mascotState: mascotState, mascotLidEdge: mascotLidEdge, drawMascot: drawMascot,
     toCsv: toCsv
   };
 });

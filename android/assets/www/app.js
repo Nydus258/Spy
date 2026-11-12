@@ -10,7 +10,7 @@
   function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { } }
 
   var DEFAULTS = {
-    lang: '', accent: '#7c4dff', animations: true, goalHours: 4, tracking: true, retention: 0, notify: true, vibrate: true,
+    lang: '', accent: '#7c4dff', animations: true, sounds: true, goalHours: 4, tracking: true, retention: 0, notify: true, vibrate: true,
     interruptKeys: 'distraction,life,communication', pomoWork: 25, pomoShort: 5, pomoLong: 15, excluded: [], overrides: {}, onboarded: false
   };
   var ACCENTS = ['#7c4dff', '#5f7cff', '#38bdf8', '#22c55e', '#f59e0b', '#ec4899', '#14b8a6'];
@@ -125,18 +125,37 @@
   };
   function icon(name) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONS[name] + '</svg>'; }
 
-  var EYE_BG = { normal: '#2a1f5c', happy: '#14432a', worried: '#5a3a12', sad: '#1c3558', angry: '#5a1c2a', sleepy: '#2a3040', loading: '#2a1f5c' };
+  // Spy gözü: masaüstündeki SpyMascot ile aynı çizim ve animasyonlar (kırpma, bakış, dönme, titreme, zıplama, gözyaşı).
+  var eyeSeq = 0;
   function eye(mood, size) {
-    mood = EYE_BG[mood] ? mood : 'normal';
-    var bg = EYE_BG[mood], body;
-    var open = '<path d="M7 24Q24 7 41 24Q24 41 7 24Z" fill="#ece8ff"/><circle cx="24" cy="24" r="8" fill="' + bg + '"/><circle cx="24" cy="24" r="5" fill="none" stroke="#38d6c4" stroke-width="2"/><circle cx="24" cy="24" r="2.2" fill="#8b6cff"/>';
-    if (mood === 'happy') body = '<path d="M9 29Q24 10 39 29" fill="none" stroke="#d6ffe2" stroke-width="4.5" stroke-linecap="round"/>';
-    else if (mood === 'worried') body = '<path d="M11 24H37" fill="none" stroke="#ffd9a0" stroke-width="4.5" stroke-linecap="round"/>';
-    else if (mood === 'sad') body = '<path d="M9 21Q24 38 39 21" fill="none" stroke="#cfe3ff" stroke-width="4.5" stroke-linecap="round"/><circle cx="35" cy="34" r="2.4" fill="#7cc4ff"/>';
-    else if (mood === 'sleepy') body = '<path d="M10 25Q24 32 38 25" fill="none" stroke="#c5cbe0" stroke-width="4" stroke-linecap="round"/><text x="32" y="17" font-size="10" fill="#c5cbe0" font-weight="700">z</text>';
-    else if (mood === 'angry') body = open + '<path d="M4 6H44V18L4 9Z" fill="' + bg + '"/><path d="M8 11L40 19" stroke="#ff8fa3" stroke-width="3" stroke-linecap="round"/>';
-    else body = open;
-    return '<svg class="eye" width="' + size + '" height="' + size + '" viewBox="0 0 48 48"><rect width="48" height="48" rx="12" fill="' + bg + '"/>' + body + '</svg>';
+    mood = C.MASCOT_MOODS[mood] ? mood : 'normal';
+    return '<canvas class="eye" data-mood="' + mood + '" data-size="' + size + '" data-off="' + ((eyeSeq++ % 30) / 10).toFixed(1) + '" style="width:' + size + 'px;height:' + size + 'px"></canvas>';
+  }
+  function drawEyes() {
+    var list = document.querySelectorAll('canvas.eye'), dpr = Math.min(3, window.devicePixelRatio || 1), now = (window.performance ? performance.now() : Date.now()) / 1000;
+    for (var i = 0; i < list.length; i++) {
+      var cv = list[i], size = Number(cv.getAttribute('data-size')), px = Math.round(size * dpr), mood = cv.getAttribute('data-mood');
+      var st = C.mascotState(mood, now + Number(cv.getAttribute('data-off')), prefs.animations);
+      var key = mood + [st.closure, st.look, st.shake, st.bounce, st.spin, st.tear].map(function (v) { return v.toFixed(2); }).join(',');
+      if (cv._key === key && cv.width === px) continue;   // değişmediyse yeniden çizme
+      if (cv.width !== px) { cv.width = px; cv.height = px; }
+      cv._key = key;
+      try { C.drawMascot(cv.getContext('2d'), px, mood, st); } catch (e) { }
+    }
+  }
+  function setEyeMood(sel, mood) { var cv = $(sel); if (cv && C.MASCOT_MOODS[mood]) { cv.setAttribute('data-mood', mood); cv._key = null; } }
+
+  // Sesler: masaüstündeki spy_sounds ile üretilen aynı üç ses (düşünüyor, cevap veriyor, oturum başlıyor).
+  var audio = {};
+  function playSound(name) {
+    if (!prefs.sounds) return;
+    (window._sounds = window._sounds || []).push(name);
+    try {
+      var a = audio[name] || (audio[name] = new Audio('sounds/' + name + '.wav'));
+      a.currentTime = 0;
+      var p = a.play();
+      if (p && p.catch) p.catch(function () { });
+    } catch (e) { }
   }
 
   function orderedCats(cats, includeEmptyMain) {
@@ -260,7 +279,7 @@
     html += '<div class="panel fade"><h2>' + esc(t('Kategori karşılaştırması')) + '</h2>' + barsHtml(r.cats, total) + '</div>';
     if (days > 1) html += '<div class="panel fade"><h2>' + esc(t('Kullanım trendi')) + '<small>' + esc(t('Günlük toplam kullanımın dönem boyunca nasıl değiştiği')) + '</small></h2>' + lineChart(r.daily) + '</div>';
     else html += '<div class="panel fade"><h2>' + esc(t('Günün yoğunluk haritası')) + '<small>' + esc(t('Saatlere göre aktivite yoğunluğu')) + '</small></h2>' + hourBars(r.hourly) + '</div>';
-    html += '<div class="panel fade"><h2>' + esc(t('Spy’ın analizi')) + '<small>' + esc(t('Seçili dönemin gerçek kayıtlarından, bu telefonda hesaplanır.')) + '</small></h2><div class="spy-says">' + eye(say[1], 34) + '<p>' + esc(say[0]) + '</p></div></div>';
+    html += '<div class="panel fade"><h2>' + esc(t('Spy’ın analizi')) + '<small>' + esc(t('Seçili dönemin gerçek kayıtlarından, bu telefonda hesaplanır.')) + '</small></h2><div class="spy-says">' + eye(say[1], 40) + '<p>' + esc(say[0]) + '</p></div></div>';
     var patterns = [], changes = [];
     if (total >= 60) {
       patterns.push(t('Günlük ortalama kullanım: {}.', long(r.dailyAvg)));
@@ -406,7 +425,7 @@
       else if (name === 'set_done') lastToast = t('Set tamamlandı 🎉');
     });
     savePomo();
-    if (!silent && lastToast) { toast(lastToast); if (prefs.vibrate) N.vibrate(250); }
+    if (!silent && lastToast) { toast(lastToast); playSound('arp'); if (prefs.vibrate) N.vibrate(250); }
   }
   function pomoLabel() {
     if (pomo.state === 'idle') return t('Hazır');
@@ -428,7 +447,7 @@
     var html = '<div class="stats three fade">' + statHtml(running ? t('Canlı odak skoru') : t('Odak skoru'), score + '%') +
       statHtml(t('Aktif oturum'), running ? (focusPaused() ? t('Duraklatıldı') : t('Odak')) : pRun ? 'Pomodoro' : t('Hazır')) + statHtml(t('Son kesinti'), lastInt) + '</div>';
     // odak kutusu
-    html += '<div class="panel fade"><div class="box-head">' + eye(running ? (live && live.score < 40 ? 'worried' : 'happy') : 'normal', 34) + '<b>' + esc(running ? (focusPaused() ? t('Duraklatıldı') : t('Odak oturumu sürüyor')) : t('Hazır')) + '</b></div>';
+    html += '<div class="panel fade"><div class="box-head">' + eye(running ? (focusPaused() ? 'sleepy' : live && live.elapsed >= 120 && live.score < 40 ? 'warning' : 'focus') : 'normal', 44) + '<b>' + esc(running ? (focusPaused() ? t('Duraklatıldı') : t('Odak oturumu sürüyor')) : t('Hazır')) + '</b></div>';
     if (running) {
       html += '<div class="big-clock focus" id="focus-clock">' + C.fmtClock(focusElapsed(now)) + '</div><div class="muted small">' +
         esc(t('{} kesinti · {} dağılma', live ? live.interruptions : 0, short(live ? live.distracted : 0))) + '</div>' +
@@ -476,12 +495,12 @@
 
   // ------------------------------------------------------------------ Spy sohbeti
   function pageSpy() {
-    var html = '<div class="panel hello fade">' + eye(S.chatBusy ? 'loading' : 'normal', 52) + '<div><b>' + esc(t('Selam 👋 Ben Spy.')) + '</b><p>' + esc(t('Aşağıdan bir soru seç; verilerine bakıp sana cevap vereyim.')) + '</p></div></div>';
-    html += '<div class="panel chat fade" id="chat">' + (S.chat.length ? '' : '<div class="msg">' + eye('normal', 28) + '<div class="bubble">' + esc(t('Buradayım. Aşağıdaki sorulardan birine dokun; verilerine bakıp cevaplayayım.')) + '</div></div>') +
+    var html = '<div class="panel hello fade">' + eye(S.chatBusy ? 'loading' : (S.heroMood || 'normal'), 64).replace('<canvas', '<canvas id="hero-eye"') + '<div><b>' + esc(t('Selam 👋 Ben Spy.')) + '</b><p>' + esc(t('Aşağıdan bir soru seç; verilerine bakıp sana cevap vereyim.')) + '</p></div></div>';
+    html += '<div class="panel chat fade" id="chat">' + (S.chat.length ? '' : '<div class="msg">' + eye('happy', 36) + '<div class="bubble">' + esc(t('Buradayım. Aşağıdaki sorulardan birine dokun; verilerine bakıp cevaplayayım.')) + '</div></div>') +
       S.chat.map(function (m) {
         if (m.mine) return '<div class="msg me"><div class="bubble">' + esc(m.text) + '</div></div>';
-        if (m.typing) return '<div class="msg">' + eye('loading', 28) + '<div class="bubble dots"><i></i><i></i><i></i></div></div>';
-        return '<div class="msg">' + eye(m.mood, 28) + '<div class="bubble">' + esc(m.text) + '</div></div>';
+        if (m.typing) return '<div class="msg">' + eye('loading', 36) + '<div class="bubble dots"><i></i><i></i><i></i></div></div>';
+        return '<div class="msg">' + eye(m.mood, 36) + '<div class="bubble">' + esc(m.text) + '</div></div>';
       }).join('') + '</div>';
     html += '<div class="actions">' + C.ACTIONS.map(function (a) {
       return '<button class="action' + (S.chatBusy ? ' busy' : '') + '" data-act="ask" data-arg="' + a[2] + '"><span class="em">' + a[0] + '</span><span>' + esc(t(a[1])) + '</span></button>';
@@ -493,6 +512,7 @@
     var label = '';
     C.ACTIONS.forEach(function (a) { if (a[2] === action) label = t(a[1]); });
     S.chat.push({ mine: true, text: label }); S.chat.push({ typing: true }); S.chatBusy = true;
+    playSound('think');
     render(); scrollChat();
     setTimeout(function () {
       var answer;
@@ -504,8 +524,13 @@
       S.chat.push({ text: answer[0], mood: answer[1] });
       if (S.chat.length > 40) S.chat = S.chat.slice(-40);
       S.chatBusy = false;
+      playSound('answer');
+      // Masaüstündeki gibi: üstteki göz cevabın ruh halini bir süre gösterir, sonra normale döner.
+      S.heroMood = answer[1];
+      var token = S.heroToken = (S.heroToken || 0) + 1;
+      setTimeout(function () { if (S.heroToken === token) { S.heroMood = 'normal'; setEyeMood('#hero-eye', 'normal'); } }, 6000);
       if (S.page === 'spy') { render(); scrollChat(); }
-    }, prefs.animations ? 650 : 0);
+    }, prefs.animations ? 900 : 0);
   }
   function scrollChat() { var v = $('#view'); if (v) v.scrollTop = v.scrollHeight; }
 
@@ -569,6 +594,7 @@
       setRow(t('Hariç tutulan uygulamalar'), prefs.excluded.length ? t('{} uygulama kaydedilmiyor', prefs.excluded.length) : t('Seçtiğin uygulamalar hiç kaydedilmez.'), '<button class="chip act" data-act="excluded">' + esc(t('Düzenle')) + '</button>') + '</div>';
     html += '<div class="section-title">' + esc(t('Bildirimler')) + '</div><div class="panel">' +
       setRow(t('Oturum bildirimleri'), t('Oturum sürerken bildirim çubuğunda kalan süreyi gösterir; çalışma ve mola bittiğinde haber verir.'), switchHtml(prefs.notify, 'toggle', 'notify')) +
+      setRow(t('Sesler'), t('Spy düşünürken, cevap verirken ve oturum başlarken kısa sesler çalar.'), switchHtml(prefs.sounds, 'toggle', 'sounds')) +
       setRow(t('Titreşim'), '', switchHtml(prefs.vibrate, 'toggle', 'vibrate')) + '</div>';
     html += '<div class="section-title">' + esc(t('Veri')) + '</div><div class="panel">' +
       setRow(t('Verileri otomatik sil'), t('Seçilen süreden eski kayıtlar silinir.'), '<button class="chip act" data-act="retention">' + esc(retentionLabel(prefs.retention)) + ' ▾</button>') +
@@ -616,6 +642,7 @@
     try { view.innerHTML = RENDER[S.page](); }
     catch (e) { view.innerHTML = '<div class="banner bad"><b>' + esc(t('Bu sayfa gösterilemedi')) + '</b>' + esc(String(e && e.message || e)) + '</div>'; if (window.console) console.error(e); }
     view.scrollTop = keepScroll ? top : 0;
+    drawEyes();
   }
   function go(page) {
     if (page === S.page) { render(true); return; }
@@ -647,7 +674,7 @@
   }
 
   function onboarding() {
-    openSheet('<div class="center" style="margin:6px 0 10px">' + eye('normal', 64).replace('class="eye"', 'class="eye" style="margin:0 auto"') + '</div><h3>' + esc(t('Spy’a hoş geldin')) + '</h3>' +
+    openSheet('<div class="center" style="margin:6px 0 10px">' + eye('happy', 72).replace('style="', 'style="margin:0 auto;') + '</div><h3>' + esc(t('Spy’a hoş geldin')) + '</h3>' +
       '<p>' + esc(t('Spy, telefonda hangi uygulamada ne kadar zaman geçirdiğini kaydeder ve gösterir.')) + '</p>' +
       '<p>' + esc(t('Yalnızca uygulama adı ve süresi kaydedilir; mesajların, ekran içeriğin ya da konumun kaydedilmez. Veriler telefonunda kalır, uygulamanın internet izni yoktur.')) + '</p>' +
       '<p>' + esc(t('Başlamak için Android’in “Kullanım erişimi” iznini açman gerekiyor. {} günlük ücretsiz deneme şimdi başlıyor.', C.TRIAL_DAYS)) + '</p>' +
@@ -743,7 +770,7 @@
       if (pomo.running()) return;
       focus = { start: N.now(), pauses: [], ignored: {} }; save('spy.focus', focus);
       if (prefs.notify) N.requestNotifications();
-      refreshFocusLive(); updateOngoing(); render(true); toast(t('Odak oturumu başladı. İyi çalışmalar!'));
+      refreshFocusLive(); updateOngoing(); playSound('arp'); render(true); toast(t('Odak oturumu başladı. İyi çalışmalar!'));
     },
     focuspause: function () {
       if (!focus) return;
@@ -772,7 +799,7 @@
       if (focus) return;
       pomo.configure(prefs.pomoWork, prefs.pomoShort, prefs.pomoLong);
       if (prefs.notify) N.requestNotifications();
-      handlePomoEvents(pomo.start(N.now()), true); render(true); toast(t('Pomodoro başladı: {} dk çalışma.', pomo.work_min));
+      handlePomoEvents(pomo.start(N.now()), true); playSound('arp'); render(true); toast(t('Pomodoro başladı: {} dk çalışma.', pomo.work_min));
     },
     pomopause: function () { var now = N.now(); handlePomoEvents(pomo.paused ? pomo.resume(now) : pomo.pause(now), true); savePomo(); render(true); },
     pomoskip: function () { handlePomoEvents(pomo.skipBreak(N.now()), false); render(true); },
@@ -931,6 +958,8 @@
     render(false);
     runPendingAction();
     setInterval(tick, 1000);
+    drawEyes();
+    setInterval(drawEyes, 40);
     splash();
     if (!prefs.onboarded) { if (S.access) setPref('onboarded', true); else onboarding(); }
   }
