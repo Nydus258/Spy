@@ -387,6 +387,26 @@ async function test(name, fn) { await fn(); passed++; console.log('  ok  ' + nam
     await owned.context().close();
   });
 
+  await test('iOS önizleme kabuğu: örnek veri şeridi, Pro bölümü yok, alarm ve titreşim Swift\'e iletilir', async () => {
+    const page = await open(browser, 'lang=tr', () => {
+      window.SPY_IOS = true; window._posted = [];
+      window.webkit = { messageHandlers: { spy: { postMessage: (m) => window._posted.push(m) } } };
+    });
+    assert.ok(/iPhone önizlemesi/.test(await text(page, '#view')));
+    assert.ok(!/Kullanım erişimi gerekli/.test(await text(page, '#view')));
+    await nav(page, 'settings');
+    assert.ok(!/Spy Pro/.test(await text(page, '#view')) && /Önizleme: örnek veri/.test(await text(page, '#view')));
+    assert.ok(/Spy 1.4.5 · iOS/.test(await text(page, '#view')));
+    await nav(page, 'focus');
+    await act(page, 'pomostart');
+    const posted = await page.evaluate(() => window._posted);
+    assert.ok(posted.some((m) => m.t === 'alarm' && m.at > 0 && m.title), 'Pomodoro alarmı Swift\'e gider: ' + JSON.stringify(posted));
+    await act(page, 'pomostop');
+    assert.ok((await page.evaluate(() => window._posted)).some((m) => m.t === 'cancel'));
+    assert.deepStrictEqual(page.errors, []);
+    await page.context().close();
+  });
+
   await test('İlk açılış: izin yokken karşılama ve izin şeridi; veri yokken boş durumlar', async () => {
     const page = await open(browser, 'lang=tr&demo=noaccess');
     assert.ok(/Spy’a hoş geldin/.test(await text(page, '.sheet')));

@@ -203,6 +203,7 @@
   // ------------------------------------------------------------------ uyarı şeritleri
   function bannersHtml() {
     var html = '';
+    if (N.preview) html += '<div class="banner fade"><b>' + esc(t('iPhone önizlemesi')) + '</b>' + esc(t('iPhone, başka uygulamaların kullanımını okumaya izin vermez; gördüğün veriler örnektir. Odak oturumu ve Pomodoro gerçekten çalışır.')) + '</div>';
     if (!S.access) {
       html += '<div class="banner fade"><b>' + esc(t('Kullanım erişimi gerekli')) + '</b>' +
         esc(t('Spy, hangi uygulamada ne kadar zaman geçirdiğini görebilmek için Android’in “Kullanım erişimi” iznine ihtiyaç duyar. Açılan listede Spy’ı bulup izni aç.')) +
@@ -584,9 +585,10 @@
   }
   function retentionLabel(days) { return days ? t('{} gün', days) : t('Hiçbir zaman'); }
   function pageSettings() {
-    var html = '<div class="section-title">' + esc(t('Spy Pro')) + '</div><div class="panel">' +
+    var html = N.preview ? '' : '<div class="section-title">' + esc(t('Spy Pro')) + '</div><div class="panel">' +
       setRow(t('Satın alma durumu'), licenseText(), S.license.state === 'licensed' ? '' : '<button class="btn" data-act="license">' + esc(t('Spy Pro’yu aç')) + '</button>') +
       setRow(t('Takip durumu'), trackingText(), S.access ? '' : '<button class="btn ghost" data-act="grant">' + esc(t('İzni aç')) + '</button>') + '</div>';
+    if (N.preview) html = '<div class="panel">' + setRow(t('Takip durumu'), t('Önizleme: örnek veri'), '') + '</div>';
     html += '<div class="section-title">' + esc(t('Görünüm')) + '</div><div class="panel">' +
       setRow(t('Dil'), '', '<button class="chip act" data-act="lang">' + (lang === 'tr' ? 'Türkçe' : 'English') + ' ▾</button>') +
       setRow(t('Vurgu rengi'), '', '<div class="swatches">' + ACCENTS.map(function (c) { return '<button style="background:' + c + '" class="' + (prefs.accent === c ? 'on' : '') + '" data-act="accent" data-arg="' + c + '" aria-label="' + c + '"></button>'; }).join('') + '</div>') +
@@ -608,7 +610,7 @@
       setRow(t('Aktivite geçmişini temizle'), t('{} kayıt saklanıyor', N.countEvents()), '<button class="btn danger" data-act="clear">' + esc(t('Temizle')) + '</button>') +
       setRow(t('Ayarları sıfırla'), '', '<button class="chip act" data-act="resetprefs">' + esc(t('Sıfırla')) + '</button>') + '</div>';
     html += '<div class="section-title">' + esc(t('Hakkında')) + '</div><div class="panel">' +
-      setRow('Spy ' + N.version() + ' · Android', t('Verilerin telefonunda kalır. Uygulamanın internet izni yoktur.')) +
+      setRow('Spy ' + N.version() + ' · ' + (N.preview ? 'iOS' : 'Android'), t('Verilerin telefonunda kalır. Uygulamanın internet izni yoktur.')) +
       setRow(t('Ne kaydedilir?'), t('Yalnızca hangi uygulamanın ne kadar süre açık kaldığı. Mesaj, ekran içeriği ya da konum kaydedilmez.')) +
       setRow(t('Destek'), 'spyisletme@gmail.com', '<button class="chip act" data-act="mail">' + esc(t('Yaz')) + '</button>') + '</div>';
     return html;

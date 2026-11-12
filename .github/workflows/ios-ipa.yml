@@ -1,0 +1,37 @@
+name: iOS .ipa (imzasız)
+
+# Spy'ın iPhone önizleme paketini GitHub'ın Mac'inde derler. Çıktı imzasızdır; telefona kurmadan önce
+# Sideloadly / AltStore gibi bir araçla kendi Apple kimliğinle imzalanır (bkz. ios/README.md).
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ios/**'
+      - 'android/assets/www/**'
+      - '.github/workflows/ios-ipa.yml'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: XcodeGen
+        run: brew install xcodegen
+      - name: Proje üret
+        run: cd ios && xcodegen generate
+      - name: Derle (imzasız)
+        run: |
+          cd ios
+          xcodebuild -project Spy.xcodeproj -scheme Spy -configuration Release -sdk iphoneos \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: .ipa paketle
+        run: |
+          cd ios
+          rm -rf Payload && mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/Spy.app Payload/
+          zip -qry Spy-1.4.5-ios.ipa Payload
+          ls -la Spy-1.4.5-ios.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Spy-ios-ipa
+          path: ios/Spy-1.4.5-ios.ipa

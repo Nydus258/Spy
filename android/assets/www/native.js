@@ -98,7 +98,10 @@
       events.push([Math.max(now - 40, events.length ? events[events.length - 1][1] : now - 40), now, 'com.spyapp.mobile']);
     }
     var access = params.demo !== 'noaccess', alarms = [];
-    var bill = { owned: params.owned === '1', available: params.billing !== 'off', pending: params.billing === 'pending' };
+    // iOS önizleme kabuğu (ios/): WKWebView `window.SPY_IOS` verir; bildirim vb. iletiler Swift'e gider. Kullanım verisi örnektir.
+    var ios = !!window.SPY_IOS;
+    function post(m) { try { window.webkit.messageHandlers.spy.postMessage(m); } catch (e) { } }
+    var bill = { owned: params.owned === '1' || ios, available: params.billing !== 'off', pending: params.billing === 'pending' };
     return {
       _mock: true, _alarms: alarms, _now: params.now ? now : null,
       version: function () { return '1.4.5'; }, ownPackage: function () { return 'com.spyapp.mobile'; },
@@ -113,14 +116,15 @@
       deleteOlderThan: function (days) { var n = events.length; events = events.filter(function (ev) { return ev[1] >= now - days * 86400; }); return n - events.length; },
       clearEvents: function () { var n = events.length; events = []; return n; },
       setExcluded: function (json) { var ex = JSON.parse(json); events = events.filter(function (ev) { return ex.indexOf(ev[2]) < 0; }); },
-      sha512Hex: null, requestNotifications: function () { }, notify: function (title, text) { console.log('[bildirim]', title, text); },
-      scheduleAlarm: function (slot, at, title, text) { alarms[slot] = { at: at, title: title, text: text }; },
-      scheduleAlarmEx: function (slot, at, title, text, nextTitle, nextText, nextEnd) { alarms[slot] = { at: at, title: title, text: text, nextTitle: nextTitle, nextText: nextText, nextEnd: nextEnd }; },
+      sha512Hex: null, requestNotifications: function () { post({ t: 'permission' }); }, notify: function (title, text) { console.log('[bildirim]', title, text); post({ t: 'notify', title: title, text: text }); },
+      scheduleAlarm: function (slot, at, title, text) { alarms[slot] = { at: at, title: title, text: text }; post({ t: 'alarm', slot: slot, at: at, title: title, text: text }); },
+      scheduleAlarmEx: function (slot, at, title, text, nextTitle, nextText, nextEnd) { alarms[slot] = { at: at, title: title, text: text, nextTitle: nextTitle, nextText: nextText, nextEnd: nextEnd }; post({ t: 'alarm', slot: slot, at: at, title: title, text: text }); },
       showOngoing: function (kind, title, text, when, chrono, countdown, pauseLabel, stopLabel) { this._ongoing = { kind: kind, title: title, text: text, when: when, chrono: chrono, countdown: countdown, pauseLabel: pauseLabel, stopLabel: stopLabel }; },
       clearOngoing: function () { this._ongoing = null; }, _ongoing: null, _action: '',
       takeAction: function () { var a = this._action; this._action = ''; return a; },
-      cancelAlarms: function () { alarms.length = 0; }, vibrate: function () { },
+      cancelAlarms: function () { alarms.length = 0; post({ t: 'cancel' }); }, vibrate: function (ms) { post({ t: 'haptic', ms: ms }); },
       saveFile: function (name, mime, content) {
+        if (ios) { post({ t: 'save', name: name, content: content }); return; }
         try {
           var a = document.createElement('a');
           a.href = URL.createObjectURL(new Blob([content], { type: mime })); a.download = name; a.click();
@@ -134,7 +138,7 @@
         input.onchange = function () { var r = new FileReader(); r.onload = function () { window.onSpyFile && window.onSpyFile(String(r.result)); }; r.readAsText(input.files[0]); };
         input.click();
       },
-      openUrl: function (url) { window.open(url, '_blank'); },
+      openUrl: function (url) { if (ios) post({ t: 'open', url: url }); else window.open(url, '_blank'); },
       billing: function () { return JSON.stringify({ available: bill.available, ready: true, owned: bill.owned, pending: bill.pending, price: (params.lang || 'tr') === 'tr' ? '₺149,99' : '$4.99' }); },
       billingBuy: function () { if (!bill.available) return false; bill.owned = true; bill.pending = false; setTimeout(function () { window.onSpyBilling && window.onSpyBilling(); }, 200); return true; },
       billingRefresh: function () { }
@@ -147,7 +151,7 @@
   function parse(json, fallback) { try { return JSON.parse(json); } catch (e) { return fallback; } }
 
   window.Native = {
-    real: real, raw: J,
+    real: real, raw: J, preview: !real && !!window.SPY_IOS,
     version: function () { return J.version(); },
     ownPackage: function () { return J.ownPackage(); },
     deviceLang: function () { return J.deviceLang(); },
