@@ -1,53 +1,32 @@
 #!/usr/bin/env bash
-# Spy Mobile derleme betiği (Gradle/Android Studio gerektirmez).
-#   Gerekenler: JDK 11+, aapt, dalvik-exchange (dx), zipalign, apksigner, android.jar (API 23+), python3, node
-#   Ubuntu/Debian:  apt-get install aapt apksigner zipalign dalvik-exchange android-sdk-platform-23
-#   Kullanım:       ./build.sh            -> dist/Spy-<sürüm>.apk
-#   İmza:           SPY_KEYSTORE / SPY_KEY_ALIAS / SPY_KEYSTORE_PASS verilirse o anahtarla, verilmezse
-#                   ~/.spy-mobile/debug.jks içinde bir kez üretilen yerel anahtarla imzalanır.
+# Spy: Odak ve Ekran Süresi - derleme betiği.
+#   Çıktı:   dist/Spy-<sürüm>-play.aab   (Google Play'e yüklenir)
+#            dist/Spy-<sürüm>-play.apk   (yalnızca inceleme için; Play'in dağıttığı paketle aynı içerik, farklı imza)
+#   Gerekenler: JDK 17+, Android SDK (platforms;android-36, build-tools;36.0.0), python3, node
+#   Ortam:   ANDROID_HOME (varsayılan ~/android-sdk)
+#            SPY_UPLOAD_KEYSTORE / SPY_UPLOAD_ALIAS / SPY_UPLOAD_PASS  -> Play yükleme anahtarı (yoksa paket imzasız çıkar)
 set -euo pipefail
 cd "$(dirname "$0")"
 unset JAVA_TOOL_OPTIONS
+export ANDROID_HOME="${ANDROID_HOME:-$HOME/android-sdk}"
+[ -f local.properties ] || echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-ANDROID_JAR="${ANDROID_JAR:-/usr/lib/android-sdk/platforms/android-23/android.jar}"
-DX="${DX:-dalvik-exchange}"
-VERSION="$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' AndroidManifest.xml)"
-grep -q "VERSION = \"$VERSION\"" src/com/spyapp/mobile/BuildInfo.java || { echo "BuildInfo.VERSION ile manifest sürümü farklı" >&2; exit 1; }
-OUT=build
-rm -rf "$OUT" && mkdir -p "$OUT/gen" "$OUT/classes" dist
+VERSION="$(sed -n "s/^def spyVersionName = '\(.*\)'/\1/p" build.gradle)"
+grep -q "VERSION = \"$VERSION\"" src/com/spyapp/mobile/BuildInfo.java || { echo "BuildInfo.VERSION ile build.gradle sürümü farklı" >&2; exit 1; }
+[ -n "${SPY_UPLOAD_KEYSTORE:-}" ] || echo "UYARI: SPY_UPLOAD_KEYSTORE verilmedi; paketler imzasız olacak (Play Console reddeder)." >&2
 
-echo "[1/6] veri + testler"
+echo "[1/3] veri + testler"
 python3 tools/gen_data.py --strict
 node tests/core.test.js >/dev/null
 bash tests/run_java_tests.sh >/dev/null
 
-echo "[2/6] kaynaklar (aapt)"
-aapt package -f -m -J "$OUT/gen" -M AndroidManifest.xml -S res -I "$ANDROID_JAR"
+echo "[2/3] gradle (R8 + AAB)"
+GRADLE=./gradlew; [ -x "$GRADLE" ] || GRADLE=gradle
+"$GRADLE" --no-daemon -q assembleRelease bundleRelease -x lint
 
-echo "[3/6] java"
-javac -nowarn --release 8 -Xlint:-options -cp "$ANDROID_JAR" -d "$OUT/classes" $(find src "$OUT/gen" -name '*.java')
-
-echo "[4/6] dex"
-"$DX" --dex --min-sdk-version=23 --output="$OUT/classes.dex" "$OUT/classes"
-
-echo "[5/6] paket"
-# resources.arsc sıkıştırılmadan saklanmalı (Android 11+ hedefleyen APK için zorunlu).
-aapt package -f -0 arsc -M AndroidManifest.xml -S res -A assets -I "$ANDROID_JAR" -F "$OUT/unaligned.apk"
-(cd "$OUT" && aapt add unaligned.apk classes.dex >/dev/null)
-zipalign -f 4 "$OUT/unaligned.apk" "$OUT/aligned.apk"
-
-echo "[6/6] imza"
-KS="${SPY_KEYSTORE:-$HOME/.spy-mobile/debug.jks}"
-ALIAS="${SPY_KEY_ALIAS:-spy}"
-PASS="${SPY_KEYSTORE_PASS:-spymobile}"
-if [ ! -f "$KS" ]; then
-  mkdir -p "$(dirname "$KS")"
-  keytool -genkeypair -keystore "$KS" -storepass "$PASS" -keypass "$PASS" -alias "$ALIAS" \
-    -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Spy Mobile" >/dev/null 2>&1
-fi
-APK="dist/Spy-$VERSION.apk"
-cp "$OUT/aligned.apk" "$APK"
-apksigner sign --ks "$KS" --ks-key-alias "$ALIAS" --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --min-sdk-version 23 "$APK"
-rm -f "$APK.idsig"
-apksigner verify --min-sdk-version 23 "$APK"
-echo "tamam: $APK ($(du -h "$APK" | cut -f1))"
+echo "[3/3] dist"
+mkdir -p dist
+if [ -n "${SPY_UPLOAD_KEYSTORE:-}" ]; then S=""; else S="-unsigned"; fi
+cp "build-gradle/outputs/bundle/release/spy-mobile-release.aab" "dist/Spy-$VERSION-play.aab"
+cp "build-gradle/outputs/apk/release/spy-mobile-release$S.apk" "dist/Spy-$VERSION-play.apk"
+ls -la "dist/Spy-$VERSION-play."*

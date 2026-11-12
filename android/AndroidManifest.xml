@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.spyapp.mobile"
-    android:versionCode="10408"
-    android:versionName="1.4.5">
-
-    <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="34" />
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Sürüm, minSdk ve targetSdk build.gradle içinde. -->
 
     <!-- Hangi uygulamanın ne kadar kullanıldığını okumak için (kullanıcı Ayarlar'dan elle açar). -->
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
     <!-- Pomodoro / odak bildirimleri. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
-    <!-- İnternet izni BİLEREK yok: veriler telefondan çıkamaz. -->
+    <!-- Tam zamanlı alarm izni istenmez: Pomodoro bildirimi sistemin izin verdiği en yakın anda gelir (Bridge.setAlarm). -->
+    <!-- İnternet izni BİLEREK yok: veriler telefondan çıkamaz. Play Faturalandırma kütüphanesi bağımlılıkları üzerinden
+         eklenen izinler aşağıda geri alınır; satın alma, Play Store uygulaması üzerinden yapılır. -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <!-- Android 11+: kullanılan uygulamaların adını okuyabilmek için. -->
     <queries>
@@ -26,11 +25,14 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:enableOnBackInvokedCallback="true"
+        tools:targetApi="33"
         android:theme="@style/SpyTheme">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|keyboard|uiMode|smallestScreenSize|fontScale|locale|layoutDirection"
             android:exported="true"
+            android:label="@string/launcher_name"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">

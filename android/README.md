@@ -1,11 +1,13 @@
-# Spy Mobile (Android)
+# Spy: Odak ve Ekran Süresi (Android)
 
 Masaüstü **Spy 1.4.5**'in telefon sürümü. Hangi uygulamada ne kadar zaman geçirdiğini telefonda kaydeder ve gösterir;
 veriler telefonda kalır (uygulamanın internet izni yoktur).
 
-Hazır paket: [`dist/Spy-1.4.5.apk`](dist/Spy-1.4.5.apk) — Android 6.0 ve üzeri.
+Android 6.0 ve üzeri. **Google Play sürümü:** [`dist/Spy-1.4.5-play.aab`](dist/Spy-1.4.5-play.aab) — yayın adımları için
+[`store/YAYIN-REHBERI.md`](store/YAYIN-REHBERI.md). Play sürümünde Spy Pro tek seferlik Google Play satın alımıdır
+(lisans anahtarı girişi yoktur). `dist/Spy-1.4.5.apk`, Play öncesi elle kurulan eski deneme sürümüdür (lisans anahtarlı).
 
-## Kurulum (telefonda)
+## Kurulum (telefonda, eski deneme APK'sı)
 
 1. `dist/Spy-1.4.5.apk` dosyasını telefona indir ve aç; "bilinmeyen kaynaklardan yükleme" izni istenirse onayla.
 2. Spy'ı aç, **İzni aç**'a dokun ve açılan listede Spy için **Kullanım erişimi**'ni etkinleştir.
@@ -20,7 +22,7 @@ Hazır paket: [`dist/Spy-1.4.5.apk`](dist/Spy-1.4.5.apk) — Android 6.0 ve üze
 | Kategoriler ve kural veritabanı (v1.8) | Aynı kategoriler; kurallar Android paket adlarına uyarlandı |
 | Odak skoru, kesinti tanımı, Pomodoro (4 tur) | Aynı formül ve durum makinesi |
 | Spy sohbeti ve yerel analiz | Aynı sorular ve cevap mantığı |
-| 3 günlük deneme + Ed25519 lisans anahtarı | Aynı açık anahtar: masaüstü anahtarları telefonda da geçerli |
+| 3 günlük deneme + lisans | 3 günlük deneme aynı; satın alma Google Play (Spy Pro, tek seferlik) |
 | 8 dil | Türkçe ve İngilizce |
 
 Telefonda olmayanlar: tarayıcı adresi/sekme başlığı okuma (Android buna izin vermez; tarayıcılar "Potansiyel" sayılır),
@@ -38,18 +40,23 @@ yan yana pencere takibi, PDF raporu, odak oturumunda anlık kesinti bildirimi (k
 
 ## Derleme
 
+Gradle projesidir (Android Studio bu klasörü doğrudan açabilir). Komut satırında:
+
 ```sh
-apt-get install aapt apksigner zipalign dalvik-exchange android-sdk-platform-23   # + JDK, python3, node
-./build.sh                       # dist/Spy-<sürüm>.apk
+# JDK 17+, Android SDK (platforms;android-36, build-tools;36.0.0), python3, node
+export ANDROID_HOME=~/android-sdk
+export SPY_UPLOAD_KEYSTORE=~/.spy-mobile/spy-upload.jks SPY_UPLOAD_ALIAS=upload SPY_UPLOAD_PASS=...
+./build.sh                       # testler + dist/Spy-<sürüm>-play.aab (+ .apk)
 node tests/core.test.js          # çekirdek (masaüstü referans değerleriyle karşılaştırır)
 bash tests/run_java_tests.sh     # kullanım kaydı kurucu
 node tests/ui.test.js            # arayüz (Playwright + Chromium gerekir)
+node store/make_graphics.js      # mağaza görselleri (store/graphics)
 ```
 
-Arayüzü bilgisayarda görmek için `assets/www/index.html` dosyasını tarayıcıda açmak yeterli (örnek veriyle çalışır).
+Arayüzü bilgisayarda görmek için `assets/www/index.html` dosyasını tarayıcıda açmak yeterli (örnek veriyle çalışır;
+`?owned=1`, `?billing=off`, `?billing=pending` ile satın alma durumları denenir).
 
 ### İmza
 
-`build.sh`, `SPY_KEYSTORE` / `SPY_KEY_ALIAS` / `SPY_KEYSTORE_PASS` verilmezse yerel bir deneme anahtarıyla imzalar.
-Depodaki APK böyle bir deneme anahtarıyla imzalıdır. Dağıtım için kendi anahtarınla yeniden derle: farklı anahtarla
-imzalı bir sürüm eskisinin üzerine kurulamaz (önce eskisini kaldırmak gerekir, kayıtlar silinir).
+AAB, **yükleme anahtarıyla** imzalanır; Play Uygulama İmzalama, kullanıcılara giden asıl anahtarı Google'da tutar.
+Yükleme anahtarını (`*.jks`) ve parolasını depoya koyma, yedekle. Anahtar verilmezse paket imzasız çıkar.

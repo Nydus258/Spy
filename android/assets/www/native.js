@@ -98,6 +98,7 @@
       events.push([Math.max(now - 40, events.length ? events[events.length - 1][1] : now - 40), now, 'com.spyapp.mobile']);
     }
     var access = params.demo !== 'noaccess', alarms = [];
+    var bill = { owned: params.owned === '1', available: params.billing !== 'off', pending: params.billing === 'pending' };
     return {
       _mock: true, _alarms: alarms, _now: params.now ? now : null,
       version: function () { return '1.4.5'; }, ownPackage: function () { return 'com.spyapp.mobile'; },
@@ -133,7 +134,10 @@
         input.onchange = function () { var r = new FileReader(); r.onload = function () { window.onSpyFile && window.onSpyFile(String(r.result)); }; r.readAsText(input.files[0]); };
         input.click();
       },
-      openUrl: function (url) { window.open(url, '_blank'); }
+      openUrl: function (url) { window.open(url, '_blank'); },
+      billing: function () { return JSON.stringify({ available: bill.available, ready: true, owned: bill.owned, pending: bill.pending, price: (params.lang || 'tr') === 'tr' ? '₺149,99' : '$4.99' }); },
+      billingBuy: function () { if (!bill.available) return false; bill.owned = true; bill.pending = false; setTimeout(function () { window.onSpyBilling && window.onSpyBilling(); }, 200); return true; },
+      billingRefresh: function () { }
     };
   }
   if (!real) J = makeMock();
@@ -175,6 +179,10 @@
     vibrate: function (ms) { J.vibrate(ms); },
     saveFile: function (name, mime, content) { J.saveFile(name, mime, content); },
     pickFile: function () { J.pickFile(); },
-    openUrl: function (url) { J.openUrl(url); }
+    openUrl: function (url) { J.openUrl(url); },
+    /** Google Play satın alma durumu: {available, ready, owned, pending, price}. Telefonda Java (PlayBilling) yanıtlar. */
+    billing: function () { return parse(J.billing(), { available: false, ready: false, owned: false, pending: false, price: '' }); },
+    billingBuy: function () { return !!J.billingBuy(); },
+    billingRefresh: function () { J.billingRefresh(); }
   };
 })();

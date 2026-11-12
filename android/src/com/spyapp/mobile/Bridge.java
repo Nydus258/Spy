@@ -1,10 +1,12 @@
 package com.spyapp.mobile;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.webkit.JavascriptInterface;
@@ -25,6 +27,27 @@ public final class Bridge {
     Bridge(MainActivity activity) {
         this.activity = activity;
         this.app = activity.getApplicationContext();
+    }
+
+    /** Spy Pro satın alma durumu (JSON): {available, ready, owned, pending, price}. */
+    @JavascriptInterface
+    public String billing() {
+        return activity.billing().stateJson();
+    }
+
+    @JavascriptInterface
+    public boolean billingBuy() {
+        return activity.buyPro();
+    }
+
+    @JavascriptInterface
+    public void billingRefresh() {
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                activity.billing().connect();
+            }
+        });
     }
 
     @JavascriptInterface
@@ -174,14 +197,17 @@ public final class Bridge {
         return PendingIntent.getBroadcast(app, ALARM_BASE + slot, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
+    @SuppressLint("MissingPermission")
     private void setAlarm(int slot, double atMs, Intent extras) {
         if (slot < 0 || slot >= ALARM_SLOTS) return;
         AlarmManager am = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = alarmIntent(slot, extras);
         long at = (long) atMs;
         try {
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
-        } catch (Throwable noExactPermission) {
+            // Tam zamanlı alarm izni istenmez (Play politikası); izin yoksa sistem en yakın uygun anda uyarır.
+            if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        } catch (Throwable e) {
             try {
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
             } catch (Throwable ignored) {

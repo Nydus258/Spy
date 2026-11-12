@@ -1,1 +1,7 @@
 build/
+build-gradle/
+.gradle/
+local.properties
+*.jks
+*.keystore
+dist/*-play.apk

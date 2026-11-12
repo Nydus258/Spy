@@ -349,27 +349,42 @@ async function test(name, fn) { await fn(); passed++; console.log('  ok  ' + nam
     await page.context().close();
   });
 
-  await test('Lisans: deneme, geçersiz anahtar, süre dolunca takip durur', async () => {
+  await test('Spy Pro: deneme, süre dolunca takip durur, satın alma açar; Play yoksa uyarı', async () => {
     const page = await open(browser, 'lang=tr');
     await nav(page, 'settings');
     assert.ok(/Deneme sürümü · 3 gün kaldı/.test(await text(page, '#view')));
     await act(page, 'license');
-    await page.fill('#lic-key', 'SPY-AEAQCA-IBAEAQ-CAIH3K-UHMPQM-UJ5JIC-W2BTZM-EC7URA-RQV4GM-Y5XEDS-XYHQSM-XH2ZBW-C4JWEX-NZUPYV-2GNCEU-VA7CRF-6DKXUX-K2RJQA-JB5M6F-2IAAZN-2AW');
-    await page.locator('.sheet [data-sact="ok"]').click();
-    assert.ok(/Lisans anahtarı geçersiz/.test(await text(page, '#lic-err')), 'başka anahtarla imzalanmış anahtar reddedilir');
+    assert.ok(/Spy Pro/.test(await text(page, '.sheet')) && /Satın al · ₺149,99/.test(await text(page, '.sheet')), 'fiyat Play\'den gelir');
+    assert.strictEqual(await page.locator('#lic-key').count(), 0, 'anahtar girişi yok (Play politikası)');
     await page.locator('.sheet [data-sact="cancel"]').click();
     await advance(page, 86400 * 3 + 60);
     await page.evaluate(() => window.onSpyResume());
     assert.ok(/Deneme bitti/.test(await text(page, '#top')));
-    assert.ok(/Takip durduruldu \(lisans gerekli\)/.test(await text(page, '#view')));
+    assert.ok(/Takip durduruldu \(Spy Pro gerekli\)/.test(await text(page, '#view')));
     await nav(page, 'general');
     assert.ok(/Deneme süresi doldu/.test(await text(page, '#view')));
     assert.strictEqual(await page.evaluate(() => window.SpyApp.state.license.state), 'expired');
-    // tarayıcı önizlemesindeki SHA-512, Java'dakiyle aynı sonucu vermeli (bilinen test vektörü)
-    const digest = await page.evaluate(() => Array.from(window.Native.sha512js(new TextEncoder().encode('abc'))).map((b) => b.toString(16).padStart(2, '0')).join(''));
-    assert.strictEqual(digest, require('crypto').createHash('sha512').update('abc').digest('hex'));
+    await act(page, 'license');
+    await page.locator('.sheet [data-sact="buy"]').click();
+    await page.waitForFunction(() => window.SpyApp.state.license.state === 'licensed');
+    assert.ok(/Spy Pro açık/.test(await text(page, '.sheet')), 'satın alma sayfası kendini yeniler');
+    await page.locator('.sheet [data-sact="cancel"]').click();
+    await nav(page, 'settings');
+    assert.ok(/Spy Pro · satın alındı/.test(await text(page, '#view')));
+    assert.strictEqual(await page.locator('#top .badge.bad').count(), 0);
     assert.deepStrictEqual(page.errors, []);
     await page.context().close();
+    const off = await open(browser, 'lang=en&billing=off');
+    await nav(off, 'settings');
+    await act(off, 'license');
+    assert.ok(/Could not reach Google Play/.test(await text(off, '.sheet')));
+    assert.ok(await off.locator('.sheet [data-sact="buy"]').isDisabled(), 'Play yokken satın al düğmesi kapalı');
+    assert.deepStrictEqual(off.errors, []);
+    await off.context().close();
+    const owned = await open(browser, 'lang=tr&owned=1');
+    await nav(owned, 'settings');
+    assert.ok(/Spy Pro · satın alındı/.test(await text(owned, '#view')));
+    await owned.context().close();
   });
 
   await test('İlk açılış: izin yokken karşılama ve izin şeridi; veri yokken boş durumlar', async () => {

@@ -75,9 +75,12 @@
 
   // ------------------------------------------------------------------ lisans
   function licenseData() { return load('spy.license', {}) || {}; }
+  /** Deneme süresi uygulamada, satın alma Google Play'de tutulur (PlayBilling önbelleği; WebView verisi satın alma sayılmaz). */
   function refreshLicense() {
     var data = licenseData(), before = S.license.state;
-    S.license = C.licenseStatus(data, N.now(), N.sha512);
+    delete data.key;
+    S.billing = N.billing();
+    S.license = S.billing.owned ? { state: 'licensed', days_left: 0, license_id: '' } : C.licenseStatus(data, N.now(), N.sha512);
     save('spy.license', data);
     if (before === 'expired' && S.license.state === 'licensed') N.skipToNow();
     return S.license;
@@ -207,8 +210,8 @@
     }
     if (S.license.state === 'expired') {
       html += '<div class="banner bad fade"><b>' + esc(t('Deneme süresi doldu')) + '</b>' +
-        esc(t('Takip durduruldu. Mevcut kayıtların duruyor; devam etmek için lisans anahtarını gir.')) +
-        '<br><button class="btn" data-act="license">' + esc(t('Lisans anahtarı gir')) + '</button></div>';
+        esc(t('Takip durduruldu. Mevcut kayıtların duruyor; devam etmek için Spy Pro’yu aç.')) +
+        '<br><button class="btn" data-act="license">' + esc(t('Spy Pro’yu aç')) + '</button></div>';
     } else if (!prefs.tracking) {
       html += '<div class="banner fade"><b>' + esc(t('Takip kapalı')) + '</b>' + esc(t('Spy şu anda kayıt almıyor. Ayarlar’dan yeniden açabilirsin.')) + '</div>';
     }
@@ -570,19 +573,19 @@
     return '<div class="set-row"' + (act ? ' data-act="' + act + '"' : '') + '><div class="txt"><b>' + esc(title) + '</b>' + (desc ? '<span>' + esc(desc) + '</span>' : '') + '</div>' + (control || '') + '</div>';
   }
   function licenseText() {
-    if (S.license.state === 'licensed') return t('Lisanslı · kimlik {}', S.license.license_id.slice(0, 8));
-    if (S.license.state === 'expired') return t('Deneme süresi doldu');
+    if (S.license.state === 'licensed') return t('Spy Pro · satın alındı');
+    if (S.license.state === 'expired') return S.billing && S.billing.pending ? t('Ödeme onay bekliyor') : t('Deneme süresi doldu');
     return t('Deneme sürümü · {} gün kaldı', S.license.days_left);
   }
   function trackingText() {
-    if (S.license.state === 'expired') return t('Takip durduruldu (lisans gerekli)');
+    if (S.license.state === 'expired') return t('Takip durduruldu (Spy Pro gerekli)');
     if (!S.access) return t('Kullanım erişimi izni verilmedi');
     return prefs.tracking ? t('Takip aktif') : t('Takip kapalı');
   }
   function retentionLabel(days) { return days ? t('{} gün', days) : t('Hiçbir zaman'); }
   function pageSettings() {
-    var html = '<div class="section-title">' + esc(t('Lisans')) + '</div><div class="panel">' +
-      setRow(t('Lisans durumu'), licenseText(), S.license.state === 'licensed' ? '' : '<button class="btn" data-act="license">' + esc(t('Anahtar gir')) + '</button>') +
+    var html = '<div class="section-title">' + esc(t('Spy Pro')) + '</div><div class="panel">' +
+      setRow(t('Satın alma durumu'), licenseText(), S.license.state === 'licensed' ? '' : '<button class="btn" data-act="license">' + esc(t('Spy Pro’yu aç')) + '</button>') +
       setRow(t('Takip durumu'), trackingText(), S.access ? '' : '<button class="btn ghost" data-act="grant">' + esc(t('İzni aç')) + '</button>') + '</div>';
     html += '<div class="section-title">' + esc(t('Görünüm')) + '</div><div class="panel">' +
       setRow(t('Dil'), '', '<button class="chip act" data-act="lang">' + (lang === 'tr' ? 'Türkçe' : 'English') + ' ▾</button>') +
@@ -681,19 +684,28 @@
       '<div class="btn-row"><button class="btn ghost" data-sact="later">' + esc(t('Sonra')) + '</button><button class="btn" data-sact="grant">' + esc(t('İzni aç')) + '</button></div>',
       { later: function () { setPref('onboarded', true); closeSheet(); }, grant: function () { setPref('onboarded', true); closeSheet(); N.openUsageSettings(); } }, true);
   }
+  /** Spy Pro: tek seferlik satın alma (Google Play). Fiyatı Play, kullanıcının ülkesine göre verir. */
   function licenseSheet() {
-    openSheet('<h3>' + esc(t('Lisans anahtarı')) + '</h3><p>' + esc(t('Satın aldığında e-postana gelen SPY-… ile başlayan anahtarı yapıştır.')) + '</p>' +
-      '<input class="field" id="lic-key" placeholder="SPY-XXXXXX-XXXXXX-…" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="err" id="lic-err"></div>' +
-      '<div class="btn-row"><button class="btn ghost" data-sact="cancel">' + esc(t('Vazgeç')) + '</button><button class="btn" data-sact="ok">' + esc(t('Etkinleştir')) + '</button></div>',
-      {
-        cancel: closeSheet,
-        ok: function () {
-          var key = $('#lic-key').value;
-          if (!C.parseKey(key, N.sha512)) { $('#lic-err').textContent = t('Lisans anahtarı geçersiz. Anahtarı kopyalarken eksik karakter kalmadığından emin ol.'); return; }
-          var data = licenseData(); data.key = C.cleanKey(key); save('spy.license', data);
-          closeSheet(); refresh(); render(true); toast(t('Lisans etkinleştirildi. Teşekkürler!'));
-        }
-      });
+    function body() {
+      var b = S.billing || {}, pro = S.license.state === 'licensed';
+      var perks = [t('Sınırsız takip: kayıt hiçbir zaman durmaz'), t('Analiz, zaman çizelgesi, odak oturumları ve Pomodoro'), t('Spy ile sohbet ve koçluk önerileri'), t('Tek seferlik ödeme, abonelik yok; veriler telefonunda kalır')];
+      var html = '<div class="center" style="margin:6px 0 10px">' + eye(pro ? 'happy' : 'normal', 64).replace('style="', 'style="margin:0 auto;') + '</div><h3>' + esc(t('Spy Pro')) + '</h3>';
+      if (pro) return html + '<p>' + esc(t('Spy Pro açık. Desteğin için teşekkürler!')) + '</p><div class="btn-row"><button class="btn" data-sact="cancel">' + esc(t('Tamam')) + '</button></div>';
+      html += '<ul class="perks">' + perks.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+      if (b.pending) html += '<p>' + esc(t('Ödemen onay bekliyor. Onaylanınca Spy Pro otomatik açılır.')) + '</p>';
+      else if (!b.available) html += '<p class="err">' + esc(t('Google Play’e ulaşılamadı. İnternet bağlantını ve Play Store’un güncel olduğunu kontrol edip tekrar dene.')) + '</p>';
+      html += '<div class="btn-row"><button class="btn ghost" data-sact="cancel">' + esc(t('Vazgeç')) + '</button>' +
+        (b.pending ? '' : '<button class="btn" data-sact="buy"' + (b.available ? '' : ' disabled') + '>' + esc(b.price ? t('Satın al · {}', b.price) : t('Satın al')) + '</button>') + '</div>' +
+        '<div class="center"><button class="link" data-sact="restore">' + esc(t('Satın alımı geri yükle')) + '</button></div>';
+      return html;
+    }
+    openSheet(body(), {
+      cancel: closeSheet,
+      buy: function () { if (!N.billingBuy()) toast(t('Satın alma şu an başlatılamadı.')); },
+      restore: function () { N.billingRefresh(); toast(t('Google Play kontrol ediliyor…')); }
+    });
+    S.sheet.pro = true;
+    S.sheetRefresh = function () { var el = $('#sheet-root .sheet'); if (el && S.sheet && S.sheet.pro) el.innerHTML = '<div class="grip"></div>' + body(); };
   }
   function excludedSheet() {
     var apps = knownApps(30).filter(function (a) { return a.app !== OWN; }), chosen = {};
@@ -902,6 +914,14 @@
     runPendingAction();
   };
   window.onSpyPause = function () { };
+  /** Google Play satın alma durumu değişti (bağlantı kuruldu, satın alma bitti, iade vb.). */
+  window.onSpyBilling = function () {
+    var before = S.license.state;
+    refreshLicense();
+    if (before !== 'licensed' && S.license.state === 'licensed') { N.skipToNow(); toast(t('Spy Pro açıldı. Teşekkürler!')); }
+    if (S.sheetRefresh) S.sheetRefresh();
+    if (!S.chatBusy) render(true);
+  };
   /** Bildirimdeki Duraklat/Devam et/Bitir düğmeleri uygulamayı açar ve eylemi buraya bırakır. */
   function runPendingAction() {
     var action = N.takeAction();

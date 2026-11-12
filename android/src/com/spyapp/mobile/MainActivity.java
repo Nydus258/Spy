@@ -8,6 +8,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.widget.FrameLayout;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.webkit.ConsoleMessage;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -32,6 +37,8 @@ public final class MainActivity extends Activity {
     private WebView web;
     private String pendingContent;
     private volatile String pendingAction = "";
+    private PlayBilling billing;
+    private OnBackInvokedCallback backCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +46,7 @@ public final class MainActivity extends Activity {
         getWindow().setStatusBarColor(BACKGROUND);
         getWindow().setNavigationBarColor(BACKGROUND);
 
+        billing = new PlayBilling(this);
         web = new WebView(this);
         web.setBackgroundColor(0xFF1C1950);  // açılış animasyonunun zemini; sayfa yüklenince kendi zemini örter
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -70,9 +78,66 @@ public final class MainActivity extends Activity {
                 return true;
             }
         });
-        setContentView(web);
+        setContentView(wrapWithInsets(web));
+        registerBack();
         readAction(getIntent());
         web.loadUrl(HOME);
+    }
+
+    /**
+     * Android 15+ uygulamayı sistem çubuklarının arkasına çizer (kenardan kenara). WebView'u çubukların, kamera çentiğinin
+     * ve klavyenin altına girmeyecek biçimde içeri iter; boşluklar uygulamanın koyu zeminiyle dolar.
+     */
+    private View wrapWithInsets(View content) {
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(BACKGROUND);
+        root.addView(content, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
+                int l, t, r, b;
+                if (Build.VERSION.SDK_INT >= 30) {
+                    android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                    android.graphics.Insets ime = insets.getInsets(WindowInsets.Type.ime());
+                    l = bars.left; t = bars.top; r = bars.right; b = Math.max(bars.bottom, ime.bottom);
+                } else {
+                    l = insets.getSystemWindowInsetLeft(); t = insets.getSystemWindowInsetTop();
+                    r = insets.getSystemWindowInsetRight(); b = insets.getSystemWindowInsetBottom();
+                }
+                v.setPadding(l, t, r, b);
+                return Build.VERSION.SDK_INT >= 30 ? WindowInsets.CONSUMED : insets.consumeSystemWindowInsets();
+            }
+        });
+        return root;
+    }
+
+    /** Android 13+ (hedef 36'da onBackPressed çağrılmaz): geri hareketi önce arayüze sorulur. */
+    private void registerBack() {
+        if (Build.VERSION.SDK_INT < 33) return;
+        backCallback = new OnBackInvokedCallback() {
+            @Override
+            public void onBackInvoked() {
+                handleBack();
+            }
+        };
+        getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+    }
+
+    PlayBilling billing() {
+        return billing;
+    }
+
+    /** Arayüz iş parçacığından satın alma ekranını açar; Play hazır değilse false ve yeniden bağlanmayı dener. */
+    boolean buyPro() {
+        final boolean ready = billing.isReadyToBuy();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (ready) billing.buy(MainActivity.this);
+                else billing.connect();
+            }
+        });
+        return ready;
     }
 
     private void readAction(Intent intent) {
@@ -109,6 +174,7 @@ public final class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        billing.connect();
         js("window.onSpyResume&&window.onSpyResume()");
     }
 
@@ -121,6 +187,8 @@ public final class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+        billing.close();
         if (web != null) {
             web.removeJavascriptInterface("SpyNative");
             web.destroy();
@@ -131,6 +199,11 @@ public final class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        handleBack();
+    }
+
+    private void handleBack() {
+        if (web == null) return;
         web.evaluateJavascript("(window.onSpyBack&&window.onSpyBack())?1:0", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String value) {

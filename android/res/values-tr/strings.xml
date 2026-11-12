@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Spy: Odak ve Ekran Süresi</string>
+    <string name="launcher_name">Spy</string>
+    <string name="channel_name">Spy</string>
+    <string name="channel_ongoing">Spy · Oturum</string>
+</resources>

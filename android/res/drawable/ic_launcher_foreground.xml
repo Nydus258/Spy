@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spy gözü; uyarlanabilir simgenin güvenli alanına (66dp) sığar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#E6E0FF" android:pathData="M25,54 Q54,22 83,54 Q54,86 25,54 Z" />
+    <path android:fillColor="#1A1442" android:pathData="M54,54m-14.5,0a14.5,14.5 0 1,0 29,0a14.5,14.5 0 1,0 -29,0" />
+    <path android:fillColor="#00000000" android:strokeColor="#7C4DFF" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M54,42.5 A11.5,11.5 0 1,1 42.5,54" />
+    <path android:fillColor="#00000000" android:strokeColor="#34D399" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M42.5,54 A11.5,11.5 0 0,0 54,65.5 A11.5,11.5 0 0,0 62,62" />
+    <path android:fillColor="#0B0827" android:pathData="M54,54m-6.5,0a6.5,6.5 0 1,0 13,0a6.5,6.5 0 1,0 -13,0" />
+    <path android:fillColor="#FFFFFF" android:pathData="M56.5,51.5m-2.6,0a2.6,2.6 0 1,0 5.2,0a2.6,2.6 0 1,0 -5.2,0" />
+</vector>
